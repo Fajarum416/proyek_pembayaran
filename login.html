@@ -32,45 +32,46 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost/proyek_pembayaran/api';
-        const loginForm = document.getElementById('loginForm');
-        const errorMessage = document.getElementById('errorMessage');
-        
-        // Kalau token sudah ada, langsung redirect
-        if (localStorage.getItem('token')) {
-            window.location.href = 'index.html';
-        }
-        
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorMessage.classList.add('hidden');
-        
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-        
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/login.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-        
-                const result = await response.json();
-        
-                if (response.ok) {
-                    localStorage.setItem('token', result.token);
-                    window.location.href = 'index.html';
-                } else {
-                    errorMessage.textContent = result.message || 'Login gagal';
-                    errorMessage.classList.remove('hidden');
-                }
-            } catch (error) {
-                errorMessage.textContent = 'Gagal terhubung ke server';
+        const API_BASE_URL = 'http://localhost/proyek_pembayaran';
+    const loginForm = document.getElementById('loginForm');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    // PERIKSA token dengan key yang benar: 'authToken'
+    if (localStorage.getItem('authToken')) { // <-- DIUBAH
+        window.location.href = 'index.html';
+    }
+    
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMessage.classList.add('hidden');
+    
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+    
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/login.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+    
+            const result = await response.json();
+    
+            if (response.ok) {
+                // SIMPAN token dengan key yang benar: 'authToken'
+                localStorage.setItem('authToken', result.token); // <-- DIUBAH
+                window.location.href = 'index.html';
+            } else {
+                errorMessage.textContent = result.message || 'Login gagal';
                 errorMessage.classList.remove('hidden');
             }
-        });
+        } catch (error) {
+            errorMessage.textContent = 'Gagal terhubung ke server';
+            errorMessage.classList.remove('hidden');
+        }
+    });
         </script>
 </body>
 </html>

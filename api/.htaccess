@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Aturan ini mengarahkan semua permintaan ke folder /api/
+    # ke skrip PHP yang sesuai tanpa mengubah metode request (POST, GET, dll).
+    # Contoh: /api/login akan diarahkan ke /api/login.php
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^api/([^/]+)/?$ api/$1.php [L,QSA]
+
+</IfModule>

@@ -240,7 +240,7 @@
             // =========================================================================
             // KONFIGURASI & STATE
             // =========================================================================
-            const API_BASE_URL = 'http://localhost/proyek_pembayaran/apin'; 
+            const API_BASE_URL = 'http://localhost/proyek_pembayaran/api'; 
             const DATA_LIMIT_PER_PAGE = 10;
             const authToken = localStorage.getItem('authToken');
 
@@ -484,11 +484,21 @@
             });
 
             exportCsvBtn.addEventListener('click', () => {
-                window.open(`${API_BASE_URL}/export-csv.php`, '_blank');
+                if (authToken) {
+                    const url = `${API_BASE_URL}/export-csv.php?token=${authToken}`;
+                    window.open(url, '_blank');
+                } else {
+                    alert('Token tidak ditemukan, silakan login ulang.');
+                }
             });
 
             exportPdfBtn.addEventListener('click', () => {
-                window.open(`${API_BASE_URL}/export-pdf.php`, '_blank');
+                if (authToken) {
+                    const url = `${API_BASE_URL}/export-pdf.php?token=${authToken}`;
+                    window.open(url, '_blank');
+                } else {
+                    alert('Token tidak ditemukan, silakan login ulang.');
+                }
             });
 
             addForm.addEventListener('submit', (e) => {

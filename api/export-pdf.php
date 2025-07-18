@@ -8,9 +8,14 @@ require_once __DIR__ . '/fpdf/fpdf.php'; // Pastikan path ini benar
 // Validasi token dari URL
 $user = validate_jwt_from_request();
 
-// --- KELAS PDF KUSTOM DENGAN DESAIN BARU ---
+// --- PERUBAHAN DIMULAI DI SINI ---
+// Ambil status filter dari URL, default ke 'semua' jika tidak ada
+$statusFilter = isset($_GET['status']) ? $_GET['status'] : 'semua';
+
+// --- KELAS PDF KUSTOM (tidak ada perubahan di sini, tetap sama) ---
 class PDF_Report extends FPDF
 {
+    // ... (Seluruh isi kelas PDF_Report tetap sama seperti sebelumnya)
     // Properti untuk menyimpan data ringkasan
     private $summaryData = [];
 
@@ -28,10 +33,9 @@ class PDF_Report extends FPDF
             $this->Image($logoPath, 10, 8, 25);
         }
 
-        // Set Font
         $this->SetFont('Arial', 'B', 15);
         $this->Cell(80);
-        $this->Cell(30, 10, 'LAPORAN PEMBAYARAN SISWA', 0, 0, 'C');
+        $this->Cell(30, 10, 'Laporan Pembayaran Siswa', 0, 0, 'C');
         $this->SetFont('Arial', '', 10);
         $this->Ln(6);
         $this->Cell(80);
@@ -41,12 +45,7 @@ class PDF_Report extends FPDF
         $this->SetFont('Arial', 'I', 8);
         $this->Cell(30, 10, 'Jl. Contoh Alamat No. 123, Kota Anda', 0, 0, 'C');
 
-        // Garis bawah
         $this->Line(10, 40, 200, 40);
-
-        // --- PERBAIKAN ---
-        // Atur posisi kursor (Y) secara eksplisit ke 45mm dari atas halaman.
-        // Ini memastikan konten utama dimulai di bawah garis header.
         $this->SetY(45);
     }
 
@@ -82,32 +81,22 @@ class PDF_Report extends FPDF
     // Tabel Data yang Didesain
     function FancyTable($header, $data)
     {
-        // Warna
-        $this->SetFillColor(4, 42, 122); // Biru Tua
+        $this->SetFillColor(4, 42, 122);
         $this->SetTextColor(255);
         $this->SetDrawColor(180, 180, 180);
         $this->SetFont('Arial', 'B', 9);
-
-        // Lebar Kolom
         $w = array(10, 55, 35, 35, 35, 20);
-
-        // Header
         for ($i = 0; $i < count($header); $i++) {
             $this->Cell($w[$i], 8, $header[$i], 1, 0, 'C', true);
         }
         $this->Ln();
-
-        // Restore warna dan font
-        $this->SetFillColor(245, 245, 245); // Abu-abu muda untuk zebra
+        $this->SetFillColor(245, 245, 245);
         $this->SetTextColor(0);
         $this->SetFont('');
-
-        // Data
         $fill = false;
         $no = 1;
         foreach ($data as $row) {
             $sisa = $row['totalBill'] - $row['totalPaid'];
-
             $this->Cell($w[0], 7, $no++, 'LR', 0, 'C', $fill);
             $this->Cell($w[1], 7, $row['name'], 'LR', 0, 'L', $fill);
             $this->Cell($w[2], 7, 'Rp ' . number_format($row['totalBill']), 'LR', 0, 'R', $fill);
@@ -117,23 +106,41 @@ class PDF_Report extends FPDF
             $this->Ln();
             $fill = !$fill;
         }
-        // Garis penutup
         $this->Cell(array_sum($w), 0, '', 'T');
     }
 }
 
-try {
-    // Ambil data ringkasan
-    $stmtSummary = $pdo->query("SELECT (SELECT SUM(total_bill) FROM students) as totalBill, (SELECT SUM(amount) FROM payment_history) as totalPaid");
-    $summary = $stmtSummary->fetch();
-    $summary['totalSisa'] = ($summary['totalBill'] ?? 0) - ($summary['totalPaid'] ?? 0);
 
-    // Ambil data detail siswa
-    $stmtStudents = $pdo->query("SELECT s.id, s.name, s.total_bill AS totalBill, SUM(IFNULL(ph.amount, 0)) as totalPaid FROM students s LEFT JOIN payment_history ph ON s.id = ph.student_id GROUP BY s.id ORDER BY s.name");
+try {
+    // --- Bangun Query Berdasarkan Filter ---
+    $baseQuery = "SELECT s.id, s.name, s.total_bill AS totalBill, SUM(IFNULL(ph.amount, 0)) as totalPaid 
+                  FROM students s 
+                  LEFT JOIN payment_history ph ON s.id = ph.student_id 
+                  GROUP BY s.id, s.name, s.total_bill";
+
+    $havingClause = '';
+    if ($statusFilter === 'lunas') {
+        $havingClause = 'HAVING totalPaid >= totalBill';
+    } elseif ($statusFilter === 'sebagian') {
+        $havingClause = 'HAVING totalPaid > 0 AND totalPaid < totalBill';
+    } elseif ($statusFilter === 'belum') {
+        $havingClause = 'HAVING totalPaid = 0 OR totalPaid IS NULL';
+    }
+
+    $finalQuery = $baseQuery . ' ' . $havingClause . ' ORDER BY s.name';
+
+    $stmtStudents = $pdo->query($finalQuery);
     $studentsData = $stmtStudents->fetchAll();
 
+    // Hitung ulang ringkasan berdasarkan data yang difilter
+    $summaryTotalBill = 0;
+    $summaryTotalPaid = 0;
     $dataForPdf = [];
+
     foreach ($studentsData as $student) {
+        $summaryTotalBill += $student['totalBill'];
+        $summaryTotalPaid += $student['totalPaid'];
+
         $status = 'Belum';
         if ($student['totalPaid'] >= $student['totalBill']) $status = 'Lunas';
         elseif ($student['totalPaid'] > 0) $status = 'Sebagian';
@@ -146,31 +153,31 @@ try {
         ];
     }
 
+    $summary = [
+        'totalBill' => $summaryTotalBill,
+        'totalPaid' => $summaryTotalPaid,
+        'totalSisa' => $summaryTotalBill - $summaryTotalPaid
+    ];
+
     // --- PEMBUATAN PDF ---
     $pdf = new PDF_Report();
     $pdf->AliasNbPages();
-    $pdf->setSummaryData($summary); // Kirim data ringkasan ke kelas PDF
+    $pdf->setSummaryData($summary);
     $pdf->AddPage();
 
-    // Teks Tanggal Laporan (sekarang akan berada di posisi Y=45)
     $pdf->SetFont('Arial', 'B', 11);
     $pdf->Cell(0, 10, 'Tanggal Laporan: ' . date('d F Y'), 0, 1);
     $pdf->Ln(5);
 
-    // Tampilkan kotak ringkasan
     $pdf->SummaryBox();
-
-    // --- PERBAIKAN ---
-    // Tambahkan spasi vertikal antara kotak ringkasan dan judul tabel
     $pdf->Ln(5);
 
-    // Tampilkan tabel detail
     $pdf->SetFont('Arial', 'B', 11);
-    $pdf->Cell(0, 10, 'Detail Pembayaran', 0, 1);
+    $pdf->Cell(0, 10, 'Detail Pembayaran (Filter: ' . ucfirst($statusFilter) . ')', 0, 1);
     $header = ['No', 'Nama Siswa', 'Tagihan', 'Terbayar', 'Sisa', 'Status'];
     $pdf->FancyTable($header, $dataForPdf);
 
-    $pdf->Output('D', 'Laporan_Pembayaran_Siswa_' . date('Y-m-d') . '.pdf');
+    $pdf->Output('D', 'Laporan_Pembayaran_' . ucfirst($statusFilter) . '_' . date('Y-m-d') . '.pdf');
     exit();
 } catch (Exception $e) {
     die("Gagal membuat PDF: " . $e->getMessage());

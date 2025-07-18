@@ -484,22 +484,24 @@
             });
 
             exportCsvBtn.addEventListener('click', () => {
-                if (authToken) {
-                    const url = `${API_BASE_URL}/export-csv.php?token=${authToken}`;
-                    window.open(url, '_blank');
-                } else {
-                    alert('Token tidak ditemukan, silakan login ulang.');
-                }
-            });
+            if (authToken) {
+                // Tambahkan parameter &status=${currentFilter} ke URL
+                const url = `${API_BASE_URL}/export-csv.php?token=${authToken}&status=${currentFilter}`;
+                window.open(url, '_blank');
+            } else {
+                alert('Token tidak ditemukan, silakan login ulang.');
+            }
+        });
 
-            exportPdfBtn.addEventListener('click', () => {
-                if (authToken) {
-                    const url = `${API_BASE_URL}/export-pdf.php?token=${authToken}`;
-                    window.open(url, '_blank');
-                } else {
-                    alert('Token tidak ditemukan, silakan login ulang.');
-                }
-            });
+        exportPdfBtn.addEventListener('click', () => {
+            if (authToken) {
+                // Tambahkan parameter &status=${currentFilter} ke URL
+                const url = `${API_BASE_URL}/export-pdf.php?token=${authToken}&status=${currentFilter}`;
+                window.open(url, '_blank');
+            } else {
+                alert('Token tidak ditemukan, silakan login ulang.');
+            }
+        });
 
             addForm.addEventListener('submit', (e) => {
                 e.preventDefault();

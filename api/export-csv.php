@@ -7,24 +7,35 @@ require_once __DIR__ . '/jwt.php';
 // Validasi token yang dikirim melalui URL
 $user = validate_jwt_from_request();
 
-// Set header agar browser mengunduh file, bukan menampilkannya
-header('Content-Type: text/csv; charset=utf-g');
-header('Content-Disposition: attachment; filename="laporan_pembayaran_siswa.csv"');
+// Ambil status filter dari URL
+$statusFilter = isset($_GET['status']) ? $_GET['status'] : 'semua';
 
-// Buka output stream PHP untuk menulis file CSV
+// Set header agar browser mengunduh file
+header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename="laporan_pembayaran_' . $statusFilter . '_' . date('Y-m-d') . '.csv"');
+
 $output = fopen('php://output', 'w');
-
-// Tulis baris header untuk CSV
 fputcsv($output, ['ID Siswa', 'Nama', 'Total Tagihan', 'Total Terbayar', 'Sisa Tagihan', 'Status']);
 
 try {
-    // Query untuk mengambil semua data siswa beserta total pembayarannya
-    $query = "SELECT s.id, s.name, s.total_bill AS totalBill, SUM(IFNULL(ph.amount, 0)) as totalPaid 
-              FROM students s 
-              LEFT JOIN payment_history ph ON s.id = ph.student_id 
-              GROUP BY s.id, s.name, s.total_bill 
-              ORDER BY s.id";
-    $stmt = $pdo->query($query);
+    // --- Bangun Query Berdasarkan Filter ---
+    $baseQuery = "SELECT s.id, s.name, s.total_bill AS totalBill, SUM(IFNULL(ph.amount, 0)) as totalPaid 
+                  FROM students s 
+                  LEFT JOIN payment_history ph ON s.id = ph.student_id 
+                  GROUP BY s.id, s.name, s.total_bill";
+
+    $havingClause = '';
+    if ($statusFilter === 'lunas') {
+        $havingClause = 'HAVING totalPaid >= totalBill';
+    } elseif ($statusFilter === 'sebagian') {
+        $havingClause = 'HAVING totalPaid > 0 AND totalPaid < totalBill';
+    } elseif ($statusFilter === 'belum') {
+        $havingClause = 'HAVING totalPaid = 0 OR totalPaid IS NULL';
+    }
+
+    $finalQuery = $baseQuery . ' ' . $havingClause . ' ORDER BY s.id';
+
+    $stmt = $pdo->query($finalQuery);
     $students = $stmt->fetchAll();
 
     foreach ($students as $student) {
@@ -32,7 +43,6 @@ try {
         $totalPaid = (float)$student['totalPaid'];
         $sisaTagihan = $totalBill - $totalPaid;
 
-        // Menentukan status pembayaran
         $status = 'Belum Bayar';
         if ($totalPaid >= $totalBill) {
             $status = 'Lunas';
@@ -40,7 +50,6 @@ try {
             $status = 'Bayar Sebagian';
         }
 
-        // Tulis baris data ke file CSV
         fputcsv($output, [
             $student['id'],
             $student['name'],
@@ -51,7 +60,6 @@ try {
         ]);
     }
 } catch (Exception $e) {
-    // Jika terjadi error, kita bisa menulis pesan error di file CSV
     fputcsv($output, ['Error mengambil data: ' . $e->getMessage()]);
 }
 

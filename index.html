@@ -74,7 +74,7 @@
                 </div>
                 <div>
                     <label for="newAmount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Bayar Awal</label>
-                    <input type="text" id="newAmount" placeholder="Contoh: 1.500.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="0">
+                    <input type="text" id="newAmount" placeholder="Contoh: 1.500.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label for="newProof" class="block text-sm font-medium text-gray-700 mb-1">Upload Bukti (Opsional)</label>
@@ -472,8 +472,32 @@
                 btn.addEventListener('click', () => {
                     currentFilter = btn.getAttribute('data-filter');
                     fetchPageData(1);
-                    filterBtns.forEach(b => b.classList.remove('bg-blue-600', 'text-white'));
-                    btn.classList.add('bg-blue-600', 'text-white');
+                    
+                    // 1. Reset semua tombol ke style default (tidak aktif)
+                    filterBtns.forEach(b => {
+                        b.classList.remove('bg-blue-600', 'bg-green-600', 'bg-yellow-500', 'bg-red-600', 'text-white');
+                        b.classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-300');
+                    });
+                    
+                    // 2. Terapkan style aktif hanya pada tombol yang diklik
+                    btn.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-300');
+                    btn.classList.add('text-white');
+
+                    const filter = btn.getAttribute('data-filter');
+                    switch (filter) {
+                        case 'lunas':
+                            btn.classList.add('bg-green-600');
+                            break;
+                        case 'sebagian':
+                            btn.classList.add('bg-yellow-500');
+                            break;
+                        case 'belum':
+                            btn.classList.add('bg-red-600');
+                            break;
+                        default: // 'semua'
+                            btn.classList.add('bg-blue-600');
+                            break;
+                    }
                 });
             });
 

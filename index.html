@@ -138,7 +138,6 @@
     </div>
 
     <!-- Semua Modal di sini -->
-    <!-- Modal Edit Pembayaran -->
     <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden opacity-0">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content transform scale-95 opacity-0">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
@@ -170,8 +169,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Modal Riwayat Pembayaran -->
     <div id="historyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden opacity-0">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl modal-content transform scale-95 opacity-0">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
@@ -196,16 +193,12 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal Lihat Bukti -->
     <div id="proofModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden opacity-0">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg relative modal-content transform scale-95 opacity-0">
             <button id="closeProofModalBtn" class="absolute -top-3 -right-3 bg-white rounded-full h-8 w-8 flex items-center justify-center text-black text-2xl shadow-lg">&times;</button>
             <img id="proofImage" src="" alt="Bukti Pembayaran" class="rounded-lg max-h-[80vh] w-full object-contain">
         </div>
     </div>
-    
-    <!-- Modal Konfirmasi Hapus -->
     <div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden opacity-0">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-sm modal-content transform scale-95 opacity-0">
             <div class="p-6 text-center">
@@ -226,9 +219,7 @@
         </div>
     </div>
 
-
     <script>
-        // Fungsi untuk memeriksa token sebelum semua skrip lain dijalankan
         (() => {
             const token = localStorage.getItem('authToken');
             if (!token) {
@@ -237,14 +228,10 @@
         })();
 
         document.addEventListener('DOMContentLoaded', () => {
-            // =========================================================================
-            // KONFIGURASI & STATE
-            // =========================================================================
             const API_BASE_URL = 'http://localhost/proyek_pembayaran/api'; 
             const DATA_LIMIT_PER_PAGE = 10;
             const authToken = localStorage.getItem('authToken');
 
-            // Elemen DOM
             const addForm = document.getElementById('addForm');
             const searchInput = document.getElementById('searchInput');
             const tableBody = document.getElementById('paymentTableBody');
@@ -254,14 +241,11 @@
             const logoutBtn = document.getElementById('logoutBtn');
             const exportCsvBtn = document.getElementById('exportCsvBtn');
             const exportPdfBtn = document.getElementById('exportPdfBtn');
-            
-            // Modal
             const editModal = document.getElementById('editModal');
             const historyModal = document.getElementById('historyModal');
             const proofModal = document.getElementById('proofModal');
             const deleteModal = document.getElementById('deleteModal');
 
-            // State Aplikasi
             let pageData = [];
             let currentFilter = 'semua';
             let searchQuery = '';
@@ -269,9 +253,6 @@
             let currentPage = 1;
             let searchDebounce;
 
-            // =========================================================================
-            // FUNGSI UTILITAS
-            // =========================================================================
             const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
             const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
             const getStatus = (paid, totalBill) => {
@@ -280,8 +261,11 @@
                 if (paid > 0) return { text: 'Bayar Sebagian', class: 'status-sebagian' };
                 return { text: 'Belum Bayar', class: 'status-belum' };
             };
+            
+            // --- PERBAIKAN FINAL FUNGSI FORMAT ANGKA ---
             const formatNumberInput = (value) => {
                 if (!value) return '';
+                // Fungsi ini sekarang hanya menghapus karakter non-angka, benar untuk input
                 const rawValue = value.toString().replace(/[^0-9]/g, '');
                 return new Intl.NumberFormat('id-ID').format(rawValue) || '';
             };
@@ -290,12 +274,8 @@
                  return parseInt(formattedValue.toString().replace(/\./g, ''), 10) || 0;
             };
 
-            // =========================================================================
-            // FUNGSI RENDER & TAMPILAN
-            // =========================================================================
             function render(students) {
                 tableBody.innerHTML = '';
-                
                 if (students.length === 0) {
                     emptyState.classList.remove('hidden');
                 } else {
@@ -305,7 +285,6 @@
                         const sisa = parseFloat(student.totalBill) - totalPaid;
                         const status = getStatus(totalPaid, student.totalBill);
                         const row = document.createElement('tr');
-                        
                         let rowClass = 'border-b border-gray-200 hover:bg-gray-100';
                         if (status.text === 'Bayar Sebagian') {
                             rowClass = 'border-b border-gray-200 bg-amber-50 hover:bg-amber-100';
@@ -313,7 +292,6 @@
                             rowClass = 'border-b border-gray-200 bg-red-50 hover:bg-red-100';
                         }
                         row.className = rowClass;
-
                         row.innerHTML = `
                             <td class="p-4 text-gray-600">${(currentPage - 1) * DATA_LIMIT_PER_PAGE + index + 1}</td>
                             <td class="p-4 font-medium">${student.name}</td>
@@ -322,17 +300,10 @@
                             <td class="p-4 text-red-600 font-medium">${formatCurrency(sisa > 0 ? sisa : 0)}</td>
                             <td class="p-4 text-center"><span class="status-badge ${status.class}">${status.text}</span></td>
                             <td class="p-4 text-center">
-                                <button class="btn-history bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-3 rounded-lg transition duration-300" data-id="${student.id}" title="Lihat Riwayat">
-                                    <i class="fas fa-history"></i>
-                                </button>
-                                <button class="btn-edit bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 px-3 rounded-lg transition duration-300 ml-2" data-id="${student.id}" title="Update Data">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-delete-student bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-2 px-3 rounded-lg transition duration-300 ml-2" data-id="${student.id}" title="Hapus Data">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        `;
+                                <button class="btn-history bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-3 rounded-lg" data-id="${student.id}" title="Lihat Riwayat"><i class="fas fa-history"></i></button>
+                                <button class="btn-edit bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 px-3 rounded-lg ml-2" data-id="${student.id}" title="Update Data"><i class="fas fa-edit"></i></button>
+                                <button class="btn-delete-student bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-2 px-3 rounded-lg ml-2" data-id="${student.id}" title="Hapus Data"><i class="fas fa-trash"></i></button>
+                            </td>`;
                         tableBody.appendChild(row);
                     });
                 }
@@ -347,14 +318,12 @@
             function renderPagination(totalPages, currentPage) {
                 paginationControls.innerHTML = '';
                 if (totalPages <= 1) return;
-
                 const prevButton = document.createElement('button');
                 prevButton.innerHTML = `<i class="fas fa-chevron-left"></i>`;
                 prevButton.className = 'pagination-btn h-10 px-4 rounded-lg bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed';
                 prevButton.disabled = currentPage === 1;
                 prevButton.addEventListener('click', () => fetchPageData(currentPage - 1));
                 paginationControls.appendChild(prevButton);
-
                 for (let i = 1; i <= totalPages; i++) {
                     const pageButton = document.createElement('button');
                     pageButton.textContent = i;
@@ -362,7 +331,6 @@
                     pageButton.addEventListener('click', () => fetchPageData(i));
                     paginationControls.appendChild(pageButton);
                 }
-
                 const nextButton = document.createElement('button');
                 nextButton.innerHTML = `<i class="fas fa-chevron-right"></i>`;
                 nextButton.className = 'pagination-btn h-10 px-4 rounded-lg bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed';
@@ -371,14 +339,8 @@
                 paginationControls.appendChild(nextButton);
             }
 
-            // =========================================================================
-            // KOMUNIKASI DENGAN API (BACKEND)
-            // =========================================================================
             async function fetchWithAuth(url, options = {}) {
-                const headers = {
-                    ...options.headers,
-                    'Authorization': `Bearer ${authToken}`
-                };
+                const headers = { ...options.headers, 'Authorization': `Bearer ${authToken}` };
                 const response = await fetch(url, { ...options, headers });
                 if (response.status === 401) {
                     localStorage.removeItem('authToken');
@@ -410,98 +372,62 @@
                     if (!response.ok) throw new Error('Gagal mengambil data dashboard');
                     const result = await response.json();
                     updateDashboard(result);
-                } catch (error) {
-                    console.error('Error fetching dashboard data:', error);
-                }
+                } catch (error) { console.error('Error fetching dashboard data:', error); }
             }
 
             async function addStudent(formData) {
                 try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/students.php`, {
-                        method: 'POST',
-                        body: formData
-                    });
+                    const response = await fetchWithAuth(`${API_BASE_URL}/students.php`, { method: 'POST', body: formData });
                     if (!response.ok) throw new Error('Gagal menambah data');
                     await fetchPageData(1);
                     await fetchDashboardData();
                     addForm.reset();
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Gagal menambahkan data. Periksa konsol untuk detail.');
-                }
+                } catch (error) { alert('Gagal menambahkan data. Periksa konsol untuk detail.'); }
             }
             
             async function updateStudent(id, formData) {
                 try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/update-student.php?id=${id}`, {
-                        method: 'POST', 
-                        body: formData
-                    });
-                    if (!response.ok) throw new Error('Gagal mengupdate data');
+                    const response = await fetchWithAuth(`${API_BASE_URL}/update-student.php?id=${id}`, { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Gagal mengupdate data');
                     await fetchPageData(currentPage);
                     await fetchDashboardData();
                     closeModal(document.getElementById('editModal'));
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Gagal mengupdate data. Periksa konsol untuk detail.');
-                }
+                } catch (error) { alert('Gagal mengupdate data: ' + error.message); }
             }
 
             async function deleteStudent(id) {
                 try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/delete-student.php?id=${id}`, {
-                        method: 'DELETE'
-                    });
+                    const response = await fetchWithAuth(`${API_BASE_URL}/delete-student.php?id=${id}`, { method: 'DELETE' });
                     if (!response.ok) throw new Error('Gagal menghapus data siswa');
                     await fetchPageData(1);
                     await fetchDashboardData();
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Gagal menghapus data siswa. Periksa konsol untuk detail.');
-                }
+                } catch (error) { alert('Gagal menghapus data siswa. Periksa konsol untuk detail.'); }
             }
             
             async function deletePaymentHistory(transactionId) {
                 try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/delete-history.php?id=${transactionId}`, {
-                        method: 'DELETE'
-                    });
+                    const response = await fetchWithAuth(`${API_BASE_URL}/delete-history.php?id=${transactionId}`, { method: 'DELETE' });
                     if (!response.ok) throw new Error('Gagal menghapus riwayat pembayaran');
                     await fetchPageData(currentPage);
                     await fetchDashboardData();
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Gagal menghapus riwayat pembayaran. Periksa konsol untuk detail.');
-                }
+                } catch (error) { alert('Gagal menghapus riwayat pembayaran. Periksa konsol untuk detail.'); }
             }
 
-            // =========================================================================
-            // EVENT LISTENERS
-            // =========================================================================
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('authToken');
                 window.location.href = 'login.html';
             });
 
             exportCsvBtn.addEventListener('click', () => {
-            if (authToken) {
-                // Tambahkan parameter &status=${currentFilter} ke URL
-                const url = `${API_BASE_URL}/export-csv.php?token=${authToken}&status=${currentFilter}`;
-                window.open(url, '_blank');
-            } else {
-                alert('Token tidak ditemukan, silakan login ulang.');
-            }
-        });
+                if (authToken) window.open(`${API_BASE_URL}/export-csv.php?token=${authToken}&status=${currentFilter}`, '_blank');
+                else alert('Token tidak ditemukan, silakan login ulang.');
+            });
 
-        exportPdfBtn.addEventListener('click', () => {
-            if (authToken) {
-                // Tambahkan parameter &status=${currentFilter} ke URL
-                const url = `${API_BASE_URL}/export-pdf.php?token=${authToken}&status=${currentFilter}`;
-                window.open(url, '_blank');
-            } else {
-                alert('Token tidak ditemukan, silakan login ulang.');
-            }
-        });
+            exportPdfBtn.addEventListener('click', () => {
+                if (authToken) window.open(`${API_BASE_URL}/export-pdf.php?token=${authToken}&status=${currentFilter}`, '_blank');
+                else alert('Token tidak ditemukan, silakan login ulang.');
+            });
 
             addForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -534,45 +460,27 @@
             document.getElementById('historyTableBody').addEventListener('click', (e) => {
                 const button = e.target.closest('button');
                 if (button && button.classList.contains('btn-delete-history')) {
-                    const transactionId = parseInt(button.dataset.transactionId);
-                    openDeleteModal(transactionId, 'history');
+                    openDeleteModal(parseInt(button.dataset.transactionId), 'history');
                 }
             });
 
             document.body.addEventListener('click', (e) => {
-                const image = e.target.closest('img.proof-thumbnail');
-                if(image) openProofModal(image.src);
+                if(e.target.closest('img.proof-thumbnail')) openProofModal(e.target.closest('img.proof-thumbnail').src);
             });
 
             filterBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const filter = btn.getAttribute('data-filter');
-                    currentFilter = filter;
+                    currentFilter = btn.getAttribute('data-filter');
                     fetchPageData(1);
-
-                    // Logika pewarnaan tombol
-                    filterBtns.forEach(b => {
-                        b.classList.remove('bg-blue-600', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'text-white');
-                        b.classList.add('bg-white', 'text-gray-700');
-                    });
-                    btn.classList.remove('bg-white', 'text-gray-700');
-                    btn.classList.add('text-white');
-                    if (filter === 'semua') btn.classList.add('bg-blue-600');
-                    else if (filter === 'lunas') btn.classList.add('bg-green-500');
-                    else if (filter === 'sebagian') btn.classList.add('bg-yellow-500');
-                    else if (filter === 'belum') btn.classList.add('bg-red-500');
+                    filterBtns.forEach(b => b.classList.remove('bg-blue-600', 'text-white'));
+                    btn.classList.add('bg-blue-600', 'text-white');
                 });
             });
 
             document.querySelectorAll('.currency-input').forEach(input => {
-                input.addEventListener('input', (e) => {
-                    e.target.value = formatNumberInput(e.target.value);
-                });
+                input.addEventListener('input', (e) => { e.target.value = formatNumberInput(e.target.value); });
             });
 
-            // =========================================================================
-            // LOGIKA MODAL
-            // =========================================================================
             function openModal(modalElement) {
                 modalElement.classList.remove('hidden');
                 setTimeout(() => {
@@ -587,50 +495,44 @@
                 setTimeout(() => modalElement.classList.add('hidden'), 300);
             }
 
+            // --- PERBAIKAN FINAL FUNGSI EDIT ---
             function openEditModal(id) {
                 const student = pageData.find(s => s.id === id);
                 if (!student) return;
                 document.getElementById('modalStudentId').value = id;
                 document.getElementById('modalName').textContent = student.name;
                 const updateTotalBillInput = document.getElementById('updateTotalBill');
-                updateTotalBillInput.value = formatNumberInput(student.totalBill);
                 document.getElementById('editForm').reset();
-                updateTotalBillInput.value = formatNumberInput(student.totalBill);
-                openModal(editModal);
+                
+                // 1. Ambil nilai dari DB (misal: "7000000.00") dan ubah jadi angka bulat
+                const billAsInteger = parseInt(student.totalBill, 10);
+                // 2. Gunakan fungsi format yang sudah benar untuk menampilkannya
+                updateTotalBillInput.value = formatNumberInput(billAsInteger);
+                
+                // 3. Tampilkan modal
+                openModal(editModal); 
             }
             
             function openHistoryModal(id) {
                 const student = pageData.find(s => s.id === id);
                 if (!student) return;
-                
                 const historyModalTitle = document.getElementById('historyModalTitle');
                 const historyTableBody = document.getElementById('historyTableBody');
                 const noHistoryState = document.getElementById('noHistoryState');
-
                 historyModalTitle.textContent = `Riwayat Pembayaran - ${student.name}`;
                 historyTableBody.innerHTML = '';
-
                 noHistoryState.classList.toggle('hidden', student.paymentHistory.length > 0);
                 historyTableBody.parentElement.classList.toggle('hidden', student.paymentHistory.length === 0);
-
                 student.paymentHistory.forEach(p => {
                     const row = document.createElement('tr');
                     row.className = 'border-b border-gray-200';
                     row.innerHTML = `
                         <td class="p-3">${formatDate(p.date)}</td>
                         <td class="p-3 text-green-600 font-medium">${formatCurrency(p.amount)}</td>
-                        <td class="p-3 text-center">
-                            ${p.proof ? `<img src="${API_BASE_URL.replace('/api', '')}${p.proof}" alt="bukti" class="h-10 w-16 object-cover mx-auto rounded-md proof-thumbnail">` : '<span class="text-xs text-gray-400">Tidak Ada</span>'}
-                        </td>
-                        <td class="p-3 text-center">
-                            <button class="btn-delete-history bg-red-500 hover:bg-red-600 text-white text-xs font-semibold py-1 px-2 rounded-lg transition duration-300" data-transaction-id="${p.transactionId}" title="Hapus Transaksi">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
+                        <td class="p-3 text-center">${p.proof ? `<img src="${API_BASE_URL.replace('/api', '')}${p.proof}" alt="bukti" class="h-10 w-16 object-cover mx-auto rounded-md proof-thumbnail">` : '<span class="text-xs text-gray-400">Tidak Ada</span>'}</td>
+                        <td class="p-3 text-center"><button class="btn-delete-history bg-red-500 hover:bg-red-600 text-white text-xs font-semibold py-1 px-2 rounded-lg" data-transaction-id="${p.transactionId}" title="Hapus Transaksi"><i class="fas fa-trash"></i></button></td>`;
                     historyTableBody.appendChild(row);
                 });
-
                 openModal(historyModal);
             }
 
@@ -663,9 +565,8 @@
             
             document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
                 if (itemToDelete.id !== null) {
-                    if (itemToDelete.type === 'student') {
-                        await deleteStudent(itemToDelete.id);
-                    } else if (itemToDelete.type === 'history') {
+                    if (itemToDelete.type === 'student') await deleteStudent(itemToDelete.id);
+                    else if (itemToDelete.type === 'history') {
                         await deletePaymentHistory(itemToDelete.id);
                         closeModal(historyModal);
                     }
@@ -685,9 +586,6 @@
                 updateStudent(id, formData);
             });
 
-            // =========================================================================
-            // INISIALISASI APLIKASI
-            // =========================================================================
             fetchPageData(1);
             fetchDashboardData();
         });

@@ -32,47 +32,45 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:3000';
+        const API_BASE_URL = 'http://localhost/proyek_pembayaran/api';
         const loginForm = document.getElementById('loginForm');
         const errorMessage = document.getElementById('errorMessage');
-
-        // Jika sudah ada token, langsung arahkan ke halaman utama
-        if (localStorage.getItem('authToken')) {
+        
+        // Kalau token sudah ada, langsung redirect
+        if (localStorage.getItem('token')) {
             window.location.href = 'index.html';
         }
-
+        
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             errorMessage.classList.add('hidden');
-
-            const username = e.target.username.value;
-            const password = e.target.password.value;
-
+        
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+        
             try {
-                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                const response = await fetch(`${API_BASE_URL}/api/login.php`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password }),
+                    body: JSON.stringify({ username, password })
                 });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message || 'Login gagal');
+        
+                const result = await response.json();
+        
+                if (response.ok) {
+                    localStorage.setItem('token', result.token);
+                    window.location.href = 'index.html';
+                } else {
+                    errorMessage.textContent = result.message || 'Login gagal';
+                    errorMessage.classList.remove('hidden');
                 }
-
-                // Simpan token ke localStorage
-                localStorage.setItem('authToken', data.token);
-                // Arahkan ke halaman utama
-                window.location.href = 'index.html';
-
             } catch (error) {
-                errorMessage.textContent = error.message;
+                errorMessage.textContent = 'Gagal terhubung ke server';
                 errorMessage.classList.remove('hidden');
             }
         });
-    </script>
+        </script>
 </body>
 </html>

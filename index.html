@@ -8,59 +8,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: white;
-            min-width: 120px;
-            text-align: center;
-            display: inline-block;
-        }
-        .status-lunas { background-color: #10B981; } /* Green-500 */
-        .status-sebagian { background-color: #F59E0B; } /* Amber-500 */
-        .status-belum { background-color: #EF4444; } /* Red-500 */
-        
-        .modal-backdrop {
-            background-color: rgba(0,0,0,0.6);
-            transition: opacity 0.3s ease-in-out;
-        }
-        .modal-content {
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        }
-        .proof-thumbnail {
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .proof-thumbnail:hover {
-            transform: scale(1.1);
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .pagination-btn {
-            min-width: 40px;
-        }
-        .pagination-btn.active {
-            background-color: #2563EB;
-            color: white;
-            border-color: #2563EB;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: white; min-width: 120px; text-align: center; display: inline-block; }
+        .status-lunas { background-color: #10B981; }
+        .status-sebagian { background-color: #F59E0B; }
+        .status-belum { background-color: #EF4444; }
+        .modal-backdrop { background-color: rgba(0,0,0,0.6); transition: opacity 0.3s ease-in-out; }
+        .modal-content { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+        .proof-thumbnail { cursor: pointer; transition: transform 0.2s; }
+        .proof-thumbnail:hover { transform: scale(1.1); }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .pagination-btn { min-width: 40px; }
+        .pagination-btn.active { background-color: #2563EB; color: white; border-color: #2563EB; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -114,7 +74,7 @@
                 </div>
                 <div>
                     <label for="newAmount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Bayar Awal</label>
-                    <input type="text" id="newAmount" placeholder="Contoh: 1500000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" min="0" value="0">
+                    <input type="text" id="newAmount" placeholder="Contoh: 1.500.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="0">
                 </div>
                 <div>
                     <label for="newProof" class="block text-sm font-medium text-gray-700 mb-1">Upload Bukti (Opsional)</label>
@@ -133,7 +93,7 @@
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
             </div>
             <div class="flex justify-center items-center gap-2 sm:gap-4 flex-wrap">
-                <button data-filter="semua" class="filter-btn bg-blue-600 border border-gray-300 text-white py-2 px-5 rounded-full font-semibold transition duration-300">Semua</button>
+                <button data-filter="semua" class="filter-btn bg-blue-600 text-white py-2 px-5 rounded-full font-semibold transition duration-300">Semua</button>
                 <button data-filter="lunas" class="filter-btn bg-white border border-gray-300 text-gray-700 py-2 px-5 rounded-full font-semibold hover:bg-gray-200 transition duration-300">Lunas</button>
                 <button data-filter="sebagian" class="filter-btn bg-white border border-gray-300 text-gray-700 py-2 px-5 rounded-full font-semibold hover:bg-gray-200 transition duration-300">Bayar Sebagian</button>
                 <button data-filter="belum" class="filter-btn bg-white border border-gray-300 text-gray-700 py-2 px-5 rounded-full font-semibold hover:bg-gray-200 transition duration-300">Belum Bayar</button>
@@ -191,11 +151,11 @@
                 <div class="space-y-4">
                     <div>
                         <label for="updateTotalBill" class="block text-sm font-medium text-gray-700 mb-1">Update Total Tagihan:</label>
-                        <input type="text" id="updateTotalBill" placeholder="Masukkan total tagihan baru" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" min="0">
+                        <input type="text" id="updateTotalBill" placeholder="Masukkan total tagihan baru" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label for="updateAmount" class="block text-sm font-medium text-gray-700 mb-1">Tambah Jumlah Pembayaran:</label>
-                        <input type="text" id="updateAmount" placeholder="Contoh: 1.000.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" min="0">
+                        <input type="text" id="updateAmount" placeholder="Contoh: 1.000.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ada pembayaran baru.</p>
                     </div>
                     <div>
@@ -268,46 +228,11 @@
 
 
     <script>
-//tombol warna 
-    const buttons = document.querySelectorAll('.filter-btn');
-
-    buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-    // Hapus semua class warna aktif dari semua tombol
-        buttons.forEach(b => {
-        b.classList.remove(
-        'bg-blue-600', 
-        'bg-green-500', 
-        'bg-yellow-500', 
-        'bg-red-500', 
-        'text-white'
-      );
-      b.classList.add('bg-white', 'text-gray-700');
-    });
-
-    // Tambahkan warna sesuai filter pada tombol yang diklik
-    const filter = btn.getAttribute('data-filter');
-
-    btn.classList.remove('bg-white', 'text-gray-700');
-    btn.classList.add('text-white');
-
-    if (filter === 'semua') {
-      btn.classList.add('bg-blue-600');
-    } else if (filter === 'lunas') {
-      btn.classList.add('bg-green-500');
-    } else if (filter === 'sebagian') {
-      btn.classList.add('bg-yellow-500');
-    } else if (filter === 'belum') {
-      btn.classList.add('bg-red-500');
-    }
-  });
-});
-
         // Fungsi untuk memeriksa token sebelum semua skrip lain dijalankan
         (() => {
             const token = localStorage.getItem('authToken');
             if (!token) {
-                window.location.href = 'login.html'; // Arahkan ke halaman login jika tidak ada token
+                window.location.href = 'login.html';
             }
         })();
 
@@ -315,7 +240,7 @@
             // =========================================================================
             // KONFIGURASI & STATE
             // =========================================================================
-            const API_BASE_URL = 'http://localhost:3000';
+            const API_BASE_URL = 'http://localhost/proyek_pembayaran/apin'; 
             const DATA_LIMIT_PER_PAGE = 10;
             const authToken = localStorage.getItem('authToken');
 
@@ -376,11 +301,18 @@
                 } else {
                     emptyState.classList.add('hidden');
                     students.forEach((student, index) => {
-                        const totalPaid = student.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
-                        const sisa = student.totalBill - totalPaid;
+                        const totalPaid = student.paymentHistory.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+                        const sisa = parseFloat(student.totalBill) - totalPaid;
                         const status = getStatus(totalPaid, student.totalBill);
                         const row = document.createElement('tr');
-                        row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                        
+                        let rowClass = 'border-b border-gray-200 hover:bg-gray-100';
+                        if (status.text === 'Bayar Sebagian') {
+                            rowClass = 'border-b border-gray-200 bg-amber-50 hover:bg-amber-100';
+                        } else if (status.text === 'Belum Bayar') {
+                            rowClass = 'border-b border-gray-200 bg-red-50 hover:bg-red-100';
+                        }
+                        row.className = rowClass;
 
                         row.innerHTML = `
                             <td class="p-4 text-gray-600">${(currentPage - 1) * DATA_LIMIT_PER_PAGE + index + 1}</td>
@@ -458,7 +390,7 @@
             async function fetchPageData(page = 1) {
                 tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-10"><div class="flex justify-center items-center"><div class="loader"></div><span class="ml-4 text-gray-500">Memuat data...</span></div></td></tr>`;
                 try {
-                    const url = `${API_BASE_URL}/api/students?page=${page}&limit=${DATA_LIMIT_PER_PAGE}&status=${currentFilter}&search=${searchQuery}`;
+                    const url = `${API_BASE_URL}/students.php?page=${page}&limit=${DATA_LIMIT_PER_PAGE}&status=${currentFilter}&search=${searchQuery}`;
                     const response = await fetchWithAuth(url);
                     if (!response.ok) throw new Error('Gagal mengambil data dari server');
                     const result = await response.json();
@@ -474,7 +406,7 @@
             
             async function fetchDashboardData() {
                  try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/api/dashboard`);
+                    const response = await fetchWithAuth(`${API_BASE_URL}/dashboard.php`);
                     if (!response.ok) throw new Error('Gagal mengambil data dashboard');
                     const result = await response.json();
                     updateDashboard(result);
@@ -485,7 +417,7 @@
 
             async function addStudent(formData) {
                 try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/api/students`, {
+                    const response = await fetchWithAuth(`${API_BASE_URL}/students.php`, {
                         method: 'POST',
                         body: formData
                     });
@@ -501,8 +433,8 @@
             
             async function updateStudent(id, formData) {
                 try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/api/students/${id}`, {
-                        method: 'PUT',
+                    const response = await fetchWithAuth(`${API_BASE_URL}/update-student.php?id=${id}`, {
+                        method: 'POST', 
                         body: formData
                     });
                     if (!response.ok) throw new Error('Gagal mengupdate data');
@@ -517,7 +449,7 @@
 
             async function deleteStudent(id) {
                 try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/api/students/${id}`, {
+                    const response = await fetchWithAuth(`${API_BASE_URL}/delete-student.php?id=${id}`, {
                         method: 'DELETE'
                     });
                     if (!response.ok) throw new Error('Gagal menghapus data siswa');
@@ -531,7 +463,7 @@
             
             async function deletePaymentHistory(transactionId) {
                 try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/api/history/${transactionId}`, {
+                    const response = await fetchWithAuth(`${API_BASE_URL}/delete-history.php?id=${transactionId}`, {
                         method: 'DELETE'
                     });
                     if (!response.ok) throw new Error('Gagal menghapus riwayat pembayaran');
@@ -551,50 +483,20 @@
                 window.location.href = 'login.html';
             });
 
-            exportCsvBtn.addEventListener('click', async () => {
-                try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/api/export/csv`);
-                    if (!response.ok) throw new Error('Gagal mengunduh laporan CSV');
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = 'laporan-pembayaran.csv';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    a.remove();
-                } catch (error) {
-                    alert(error.message);
-                }
+            exportCsvBtn.addEventListener('click', () => {
+                window.open(`${API_BASE_URL}/export-csv.php`, '_blank');
             });
 
-            exportPdfBtn.addEventListener('click', async () => {
-                try {
-                    const response = await fetchWithAuth(`${API_BASE_URL}/api/export/pdf`);
-                    if (!response.ok) throw new Error('Gagal mengunduh laporan PDF');
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = 'laporan-pembayaran.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    a.remove();
-                } catch (error) {
-                    alert(error.message);
-                }
+            exportPdfBtn.addEventListener('click', () => {
+                window.open(`${API_BASE_URL}/export-pdf.php`, '_blank');
             });
 
             addForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const formData = new FormData();
                 formData.append('name', document.getElementById('newName').value);
-                formData.append('totalBill', getRawNumber (document.getElementById('newTotalBill').value));
-                formData.append('amount', getRawNumber (document.getElementById('newAmount').value));
+                formData.append('totalBill', getRawNumber(document.getElementById('newTotalBill').value));
+                formData.append('amount', getRawNumber(document.getElementById('newAmount').value));
                 const proofFile = document.getElementById('newProof').files[0];
                 if (proofFile) formData.append('proof', proofFile);
                 addStudent(formData);
@@ -632,15 +534,25 @@
 
             filterBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    filterBtns.forEach(b => b.classList.remove('bg-blue-600', 'text-white'));
-                    btn.classList.add('bg-blue-600', 'text-white');
-                    currentFilter = btn.dataset.filter;
+                    const filter = btn.getAttribute('data-filter');
+                    currentFilter = filter;
                     fetchPageData(1);
+
+                    // Logika pewarnaan tombol
+                    filterBtns.forEach(b => {
+                        b.classList.remove('bg-blue-600', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'text-white');
+                        b.classList.add('bg-white', 'text-gray-700');
+                    });
+                    btn.classList.remove('bg-white', 'text-gray-700');
+                    btn.classList.add('text-white');
+                    if (filter === 'semua') btn.classList.add('bg-blue-600');
+                    else if (filter === 'lunas') btn.classList.add('bg-green-500');
+                    else if (filter === 'sebagian') btn.classList.add('bg-yellow-500');
+                    else if (filter === 'belum') btn.classList.add('bg-red-500');
                 });
             });
 
-             // Event listener untuk format input mata uang
-             document.querySelectorAll('.currency-input').forEach(input => {
+            document.querySelectorAll('.currency-input').forEach(input => {
                 input.addEventListener('input', (e) => {
                     e.target.value = formatNumberInput(e.target.value);
                 });
@@ -668,9 +580,10 @@
                 if (!student) return;
                 document.getElementById('modalStudentId').value = id;
                 document.getElementById('modalName').textContent = student.name;
-                document.getElementById('updateTotalBill').value = student.totalBill;
+                const updateTotalBillInput = document.getElementById('updateTotalBill');
+                updateTotalBillInput.value = formatNumberInput(student.totalBill);
                 document.getElementById('editForm').reset();
-                document.getElementById('updateTotalBill').value = student.totalBill;
+                updateTotalBillInput.value = formatNumberInput(student.totalBill);
                 openModal(editModal);
             }
             
@@ -695,7 +608,7 @@
                         <td class="p-3">${formatDate(p.date)}</td>
                         <td class="p-3 text-green-600 font-medium">${formatCurrency(p.amount)}</td>
                         <td class="p-3 text-center">
-                            ${p.proof ? `<img src="${API_BASE_URL}${p.proof}" alt="bukti" class="h-10 w-16 object-cover mx-auto rounded-md proof-thumbnail">` : '<span class="text-xs text-gray-400">Tidak Ada</span>'}
+                            ${p.proof ? `<img src="${API_BASE_URL.replace('/api', '')}${p.proof}" alt="bukti" class="h-10 w-16 object-cover mx-auto rounded-md proof-thumbnail">` : '<span class="text-xs text-gray-400">Tidak Ada</span>'}
                         </td>
                         <td class="p-3 text-center">
                             <button class="btn-delete-history bg-red-500 hover:bg-red-600 text-white text-xs font-semibold py-1 px-2 rounded-lg transition duration-300" data-transaction-id="${p.transactionId}" title="Hapus Transaksi">
@@ -753,8 +666,8 @@
                 e.preventDefault();
                 const id = document.getElementById('modalStudentId').value;
                 const formData = new FormData();
-                formData.append('totalBill', document.getElementById('updateTotalBill').value);
-                formData.append('amountToAdd', document.getElementById('updateAmount').value);
+                formData.append('totalBill', getRawNumber(document.getElementById('updateTotalBill').value));
+                formData.append('amountToAdd', getRawNumber(document.getElementById('updateAmount').value));
                 const proofFile = document.getElementById('updateProof').files[0];
                 if (proofFile) formData.append('proof', proofFile);
                 updateStudent(id, formData);

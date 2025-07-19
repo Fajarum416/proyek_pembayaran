@@ -1,7 +1,7 @@
 <?php
 // api/jwt.php
 
-$jwt_secret_key = "ini_adalah_kunci_rahasia_yang_sangat_panjang_dan_aman_sekali";
+$jwt_secret_key = "wHYL6uPO3sxWe5Nl0n0l";
 
 function generate_jwt($payload)
 {

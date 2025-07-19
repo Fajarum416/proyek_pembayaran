@@ -1,9 +1,14 @@
+php_flag display_errors off
+php_flag log_errors on
+php_value error_log /path/ke/folder/logs/php_error.log
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
     # Aturan ini mengarahkan semua permintaan ke folder /api/
     # ke skrip PHP yang sesuai tanpa mengubah metode request (POST, GET, dll).
     # Contoh: /api/login akan diarahkan ke /api/login.php
+
 
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f

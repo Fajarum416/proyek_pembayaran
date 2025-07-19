@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 
 $host = 'localhost';
-$dbname = 'pembayaran_db';
-$user = 'root';
-$pass = '';
+$dbname = 'u500054717_pembayaran_ymi';
+$user = 'u500054717_Yamaguchidata';
+$pass = 'Ymiid123';
 
 // Header ini tetap diperlukan untuk respons API utama Anda.
 header("Content-Type: application/json");

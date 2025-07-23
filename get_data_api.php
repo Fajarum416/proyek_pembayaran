@@ -3,7 +3,7 @@
 header('Content-Type: application/json');
 
 // --- EDIT BAGIAN INI SESUAI DENGAN KONFIGURASI DATABASE ANDA ---
-$db_host = 'localhost';      // Biasanya 'localhost'
+$host = 'localhost';
 $dbname = 'u500054717_pembayaran_ymi';
 $user = 'u500054717_Yamaguchidata';
 $pass = 'Ymiid123';

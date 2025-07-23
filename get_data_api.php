@@ -3,10 +3,10 @@
 header('Content-Type: application/json');
 
 // --- EDIT BAGIAN INI SESUAI DENGAN KONFIGURASI DATABASE ANDA ---
-$host = 'localhost';
-$dbname = 'u500054717_pembayaran_ymi';
-$user = 'u500054717_Yamaguchidata';
-$pass = 'Ymiid123';
+$db_host = 'localhost';      // Biasanya 'localhost'
+$db_name = 'u500054717_pembayaran_ymi';   // Ganti dengan nama database Anda
+$db_user = 'u500054717_Yamaguchidata';  // Ganti dengan username database Anda
+$db_pass = 'Ymiid123';  // Ganti dengan password database Anda
 // -------------------------------------------------------------
 
 // Membuat koneksi ke database menggunakan PDO (cara yang lebih aman)

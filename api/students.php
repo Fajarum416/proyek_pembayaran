@@ -28,6 +28,10 @@ function handle_get_students($pdo)
     $search = isset($_GET['search']) ? $_GET['search'] : '';
     $offset = ($page - 1) * $limit;
 
+    // Ambil nilai ambang batas dari parameter GET
+    $tahap1_threshold = isset($_GET['tahap1']) ? (float)$_GET['tahap1'] : 0;
+    $tahap2_threshold = isset($_GET['tahap2']) ? (float)$_GET['tahap2'] : 0;
+
     $whereClauses = [];
     $havingClauses = [];
     $queryParams = [];
@@ -38,11 +42,40 @@ function handle_get_students($pdo)
     }
     $whereSql = count($whereClauses) > 0 ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
 
-    if ($status !== 'semua') {
-        if ($status === 'lunas') $havingClauses[] = 'totalPaid >= s.total_bill';
-        elseif ($status === 'sebagian') $havingClauses[] = 'totalPaid > 0 AND totalPaid < s.total_bill';
-        elseif ($status === 'belum') $havingClauses[] = 'totalPaid = 0 OR totalPaid IS NULL';
+    // Logika HAVING clause baru dengan tahapan
+    switch ($status) {
+        case 'lunas':
+            $havingClauses[] = 'totalPaid >= s.total_bill';
+            break;
+        case 'lunas_tahap_2':
+            if ($tahap2_threshold > 0) {
+                $havingClauses[] = 'totalPaid >= :tahap2 AND totalPaid < s.total_bill';
+                $queryParams[':tahap2'] = $tahap2_threshold;
+            }
+            break;
+        case 'lunas_tahap_1':
+            if ($tahap1_threshold > 0) {
+                // Bayar antara tahap 1 dan tahap 2
+                $limitAtas = ($tahap2_threshold > $tahap1_threshold) ? $tahap2_threshold : 's.total_bill';
+                $havingClauses[] = 'totalPaid >= :tahap1 AND totalPaid < ' . $limitAtas;
+                $queryParams[':tahap1'] = $tahap1_threshold;
+                if ($limitAtas == ':tahap2_limit') {
+                    $queryParams[':tahap2_limit'] = $tahap2_threshold;
+                }
+            }
+            break;
+        case 'sebagian':
+            $limitBawah = ($tahap1_threshold > 0) ? $tahap1_threshold : 's.total_bill';
+            $havingClauses[] = 'totalPaid > 0 AND totalPaid < ' . $limitBawah;
+            if ($limitBawah == ':tahap1_limit') {
+                $queryParams[':tahap1_limit'] = $tahap1_threshold;
+            }
+            break;
+        case 'belum':
+            $havingClauses[] = 'totalPaid = 0 OR totalPaid IS NULL';
+            break;
     }
+
     $havingSql = count($havingClauses) > 0 ? 'HAVING ' . implode(' AND ', $havingClauses) : '';
 
     try {
@@ -63,9 +96,7 @@ function handle_get_students($pdo)
         $students = $stmt->fetchAll();
 
         if (count($students) > 0) {
-            $studentIds = array_map(function ($s) {
-                return $s['id'];
-            }, $students);
+            $studentIds = array_map(fn($s) => $s['id'], $students);
             $placeholders = implode(',', array_fill(0, count($studentIds), '?'));
             $historyQuery = "SELECT transaction_id as transactionId, student_id, payment_date as date, amount, proof_image_url as proof FROM payment_history WHERE student_id IN ($placeholders) ORDER BY payment_date DESC";
             $stmt = $pdo->prepare($historyQuery);
@@ -84,7 +115,7 @@ function handle_get_students($pdo)
         echo json_encode(['data' => $students, 'totalPages' => $totalPages, 'currentPage' => $page]);
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Gagal mengambil data siswa.']);
+        echo json_encode(['status' => 'error', 'message' => 'Gagal mengambil data siswa.', 'error_detail' => $e->getMessage()]);
     }
 }
 

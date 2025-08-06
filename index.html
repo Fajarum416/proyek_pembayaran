@@ -11,6 +11,8 @@
         body { font-family: 'Inter', sans-serif; }
         .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: white; min-width: 120px; text-align: center; display: inline-block; }
         .status-lunas { background-color: #10B981; }
+        .status-lunas-tahap-2 { background-color: #22C55E; } /* Hijau lebih terang */
+        .status-lunas-tahap-1 { background-color: #84CC16; } /* Hijau-kuning */
         .status-sebagian { background-color: #F59E0B; }
         .status-belum { background-color: #EF4444; }
         .modal-backdrop { background-color: rgba(0,0,0,0.6); transition: opacity 0.3s ease-in-out; }
@@ -60,51 +62,49 @@
             </div>
         </div>
 
-        <!-- Form Tambah Data -->
-        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
-            <h2 class="text-xl font-semibold mb-4">Tambah Data Baru</h2>
-            <form id="addForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <div class="md:col-span-1">
-                    <label for="newName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                    <input type="text" id="newName" placeholder="Masukkan nama..." class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-                <div>
-                    <label for="newTotalBill" class="block text-sm font-medium text-gray-700 mb-1">Total Tagihan</label>
-                    <input type="text" id="newTotalBill" placeholder="Contoh: 1.000.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-                <div>
-                    <label for="newAmount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Bayar Awal</label>
-                    <input type="text" id="newAmount" placeholder="Contoh: 1.500.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label for="newProof" class="block text-sm font-medium text-gray-700 mb-1">Upload Bukti (Opsional)</label>
-                    <input type="file" id="newProof" name="proof" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                </div>
-                <button type="submit" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 shadow h-fit md:col-span-4">
-                    <i class="fas fa-plus mr-2"></i>Tambah Data
-                </button>
-            </form>
-        </div>
-
-        <!-- Pencarian dan Filter -->
+        <!-- Pencarian, Filter, dan Tombol Aksi -->
         <div class="bg-white p-4 rounded-xl shadow-md mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
+             <div class="flex-1 w-full md:w-auto">
+                <button id="openAddModalBtn" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg transition duration-300">
+                    <i class="fas fa-plus mr-2"></i>Tambah Data Baru
+                </button>
+             </div>
              <div class="relative w-full md:w-1/3">
                 <input type="text" id="searchInput" placeholder="Cari nama..." class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
             </div>
-            <div class="flex justify-center items-center gap-2 sm:gap-4 flex-wrap">
-                <button data-filter="semua" class="filter-btn bg-blue-600 text-white py-2 px-5 rounded-full font-semibold transition duration-300">Semua</button>
-                <button data-filter="lunas" class="filter-btn bg-white border border-gray-300 text-gray-700 py-2 px-5 rounded-full font-semibold hover:bg-gray-200 transition duration-300">Lunas</button>
-                <button data-filter="sebagian" class="filter-btn bg-white border border-gray-300 text-gray-700 py-2 px-5 rounded-full font-semibold hover:bg-gray-200 transition duration-300">Bayar Sebagian</button>
-                <button data-filter="belum" class="filter-btn bg-white border border-gray-300 text-gray-700 py-2 px-5 rounded-full font-semibold hover:bg-gray-200 transition duration-300">Belum Bayar</button>
-                <div class="flex gap-2">
-                    <button id="exportCsvBtn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300" title="Ekspor ke Excel (CSV)">
-                        <i class="fas fa-file-csv"></i>
+            <div class="flex justify-center items-center gap-4 flex-wrap">
+                <!-- Dropdown Filter Modern -->
+                <div class="relative" id="customFilterDropdown">
+                    <label class="font-semibold mr-2">Filter:</label>
+                    <button id="filterDropdownBtn" type="button" class="inline-flex items-center justify-between w-48 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <span id="filterDropdownLabel">Semua</span>
+                        <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
                     </button>
-                    <button id="exportPdfBtn" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300" title="Ekspor ke PDF">
-                        <i class="fas fa-file-pdf"></i>
-                    </button>
+                    <div id="filterDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10" role="menu">
+                        <div class="py-1" role="none">
+                            <a href="#" class="filter-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" data-filter="semua" data-label="Semua">Semua</a>
+                            <a href="#" class="filter-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" data-filter="lunas" data-label="Lunas Penuh">Lunas Penuh</a>
+                            <a href="#" class="filter-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" data-filter="lunas_tahap_2" data-label="Lunas Tahap 2">Lunas Tahap 2</a>
+                            <a href="#" class="filter-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" data-filter="lunas_tahap_1" data-label="Lunas Tahap 1">Lunas Tahap 1</a>
+                            <a href="#" class="filter-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" data-filter="sebagian" data-label="Bayar Sebagian">Bayar Sebagian</a>
+                            <a href="#" class="filter-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" data-filter="belum" data-label="Belum Bayar">Belum Bayar</a>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="openSettingsModalBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300" title="Pengaturan Tahapan">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button id="exportCsvBtn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300" title="Ekspor ke Excel (CSV)">
+                    <i class="fas fa-file-csv"></i>
+                </button>
+                <button id="exportPdfBtn" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300" title="Ekspor ke PDF">
+                    <i class="fas fa-file-pdf"></i>
+                </button>
             </div>
         </div>
 
@@ -122,9 +122,7 @@
                         <th class="p-4 font-semibold text-sm text-gray-600 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="paymentTableBody">
-                    <!-- Data akan dimuat dari server -->
-                </tbody>
+                <tbody id="paymentTableBody"></tbody>
             </table>
             <div id="emptyState" class="text-center p-10 text-gray-500 hidden">
                 <p>Tidak ada data yang ditemukan.</p>
@@ -132,12 +130,75 @@
         </div>
 
         <!-- Kontrol Paginasi -->
-        <div id="pagination-controls" class="flex justify-center items-center mt-8 space-x-1">
-            <!-- Tombol paginasi akan disisipkan di sini oleh JavaScript -->
-        </div>
+        <div id="pagination-controls" class="flex justify-center items-center mt-8 space-x-1"></div>
     </div>
 
     <!-- Semua Modal di sini -->
+    <!-- Modal Pengaturan -->
+    <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden opacity-0">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg modal-content transform scale-95 opacity-0">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-semibold">Pengaturan Nominal Tahapan</h3>
+                <button id="closeSettingsModalBtn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+            <form id="settingsForm" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label for="tahap1Threshold" class="block text-sm font-medium text-gray-700 mb-1">Batas Nominal Lunas Tahap 1</label>
+                        <input type="text" id="tahap1Threshold" placeholder="Contoh: 3.500.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Siswa dianggap "Lunas Tahap 1" jika total pembayaran mencapai atau melebihi angka ini.</p>
+                    </div>
+                    <div>
+                        <label for="tahap2Threshold" class="block text-sm font-medium text-gray-700 mb-1">Batas Nominal Lunas Tahap 2</label>
+                        <input type="text" id="tahap2Threshold" placeholder="Contoh: 7.000.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Siswa dianggap "Lunas Tahap 2" jika total pembayaran mencapai atau melebihi angka ini.</p>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" id="cancelSettingsModalBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Batal</button>
+                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">Simpan Pengaturan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Data Baru -->
+    <div id="addModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden opacity-0">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl modal-content transform scale-95 opacity-0">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-semibold">Tambah Data Siswa Baru</h3>
+                <button id="closeAddModalBtn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+            <form id="addForm" class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="newName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                        <input type="text" id="newName" placeholder="Masukkan nama..." class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="newTotalBill" class="block text-sm font-medium text-gray-700 mb-1">Total Tagihan</label>
+                        <input type="text" id="newTotalBill" placeholder="Contoh: 7.000.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="newAmount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Bayar Awal (Opsional)</label>
+                        <input type="text" id="newAmount" placeholder="Contoh: 1.500.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="0">
+                    </div>
+                    <div>
+                        <label for="newProof" class="block text-sm font-medium text-gray-700 mb-1">Upload Bukti (Opsional)</label>
+                        <input type="file" id="newProof" name="proof" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" id="cancelAddModalBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Batal</button>
+                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>Tambah Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit Pembayaran -->
     <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden opacity-0">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content transform scale-95 opacity-0">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
@@ -169,6 +230,8 @@
             </form>
         </div>
     </div>
+    
+    <!-- Sisa Modal Lainnya (History, Proof, Delete) -->
     <div id="historyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden opacity-0">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl modal-content transform scale-95 opacity-0">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
@@ -223,7 +286,7 @@
         (() => {
             const token = localStorage.getItem('authToken');
             if (!token) {
-                window.location.href = 'login.html';
+                window.location.href = new URL('login.html', window.location.href).href;
             }
         })();
 
@@ -235,16 +298,25 @@
             const addForm = document.getElementById('addForm');
             const searchInput = document.getElementById('searchInput');
             const tableBody = document.getElementById('paymentTableBody');
-            const filterBtns = document.querySelectorAll('.filter-btn');
             const emptyState = document.getElementById('emptyState');
             const paginationControls = document.getElementById('pagination-controls');
             const logoutBtn = document.getElementById('logoutBtn');
             const exportCsvBtn = document.getElementById('exportCsvBtn');
             const exportPdfBtn = document.getElementById('exportPdfBtn');
+            
+            const openAddModalBtn = document.getElementById('openAddModalBtn');
+            const addModal = document.getElementById('addModal');
             const editModal = document.getElementById('editModal');
             const historyModal = document.getElementById('historyModal');
             const proofModal = document.getElementById('proofModal');
             const deleteModal = document.getElementById('deleteModal');
+            const settingsModal = document.getElementById('settingsModal');
+            const openSettingsModalBtn = document.getElementById('openSettingsModalBtn');
+            const settingsForm = document.getElementById('settingsForm');
+            
+            const filterDropdownBtn = document.getElementById('filterDropdownBtn');
+            const filterDropdownLabel = document.getElementById('filterDropdownLabel');
+            const filterDropdownMenu = document.getElementById('filterDropdownMenu');
 
             let pageData = [];
             let currentFilter = 'semua';
@@ -252,20 +324,23 @@
             let itemToDelete = { id: null, type: null };
             let currentPage = 1;
             let searchDebounce;
+            let paymentSettings = { tahap1: 0, tahap2: 0 };
 
             const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
             const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            
             const getStatus = (paid, totalBill) => {
-                if (totalBill <= 0) return { text: 'N/A', class: 'bg-gray-400' };
-                if (paid >= totalBill) return { text: 'Lunas', class: 'status-lunas' };
+                const { tahap1, tahap2 } = paymentSettings;
+                if (totalBill <= 0 || paid <= 0) return { text: 'Belum Bayar', class: 'status-belum' };
+                if (paid >= totalBill) return { text: 'Lunas Penuh', class: 'status-lunas' };
+                if (tahap2 > 0 && paid >= tahap2) return { text: 'Lunas Tahap 2', class: 'status-lunas-tahap-2' };
+                if (tahap1 > 0 && paid >= tahap1) return { text: 'Lunas Tahap 1', class: 'status-lunas-tahap-1' };
                 if (paid > 0) return { text: 'Bayar Sebagian', class: 'status-sebagian' };
                 return { text: 'Belum Bayar', class: 'status-belum' };
             };
             
-            // --- PERBAIKAN FINAL FUNGSI FORMAT ANGKA ---
             const formatNumberInput = (value) => {
                 if (!value) return '';
-                // Fungsi ini sekarang hanya menghapus karakter non-angka, benar untuk input
                 const rawValue = value.toString().replace(/[^0-9]/g, '');
                 return new Intl.NumberFormat('id-ID').format(rawValue) || '';
             };
@@ -286,11 +361,8 @@
                         const status = getStatus(totalPaid, student.totalBill);
                         const row = document.createElement('tr');
                         let rowClass = 'border-b border-gray-200 hover:bg-gray-100';
-                        if (status.text === 'Bayar Sebagian') {
-                            rowClass = 'border-b border-gray-200 bg-amber-50 hover:bg-amber-100';
-                        } else if (status.text === 'Belum Bayar') {
-                            rowClass = 'border-b border-gray-200 bg-red-50 hover:bg-red-100';
-                        }
+                        if (status.text === 'Bayar Sebagian') rowClass = 'border-b border-gray-200 bg-amber-50 hover:bg-amber-100';
+                        else if (status.text === 'Belum Bayar') rowClass = 'border-b border-gray-200 bg-red-50 hover:bg-red-100';
                         row.className = rowClass;
                         row.innerHTML = `
                             <td class="p-4 text-gray-600">${(currentPage - 1) * DATA_LIMIT_PER_PAGE + index + 1}</td>
@@ -344,7 +416,7 @@
                 const response = await fetch(url, { ...options, headers });
                 if (response.status === 401) {
                     localStorage.removeItem('authToken');
-                    window.location.href = 'login.html';
+                    window.location.href = new URL('login.html', window.location.href).href;
                 }
                 return response;
             }
@@ -352,7 +424,7 @@
             async function fetchPageData(page = 1) {
                 tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-10"><div class="flex justify-center items-center"><div class="loader"></div><span class="ml-4 text-gray-500">Memuat data...</span></div></td></tr>`;
                 try {
-                    const url = `${API_BASE_URL}/students.php?page=${page}&limit=${DATA_LIMIT_PER_PAGE}&status=${currentFilter}&search=${searchQuery}`;
+                    const url = `${API_BASE_URL}/students.php?page=${page}&limit=${DATA_LIMIT_PER_PAGE}&status=${currentFilter}&search=${searchQuery}&tahap1=${paymentSettings.tahap1}&tahap2=${paymentSettings.tahap2}`;
                     const response = await fetchWithAuth(url);
                     if (!response.ok) throw new Error('Gagal mengambil data dari server');
                     const result = await response.json();
@@ -382,6 +454,7 @@
                     await fetchPageData(1);
                     await fetchDashboardData();
                     addForm.reset();
+                    closeModal(addModal);
                 } catch (error) { alert('Gagal menambahkan data. Periksa konsol untuk detail.'); }
             }
             
@@ -392,7 +465,7 @@
                     if (!response.ok) throw new Error(result.message || 'Gagal mengupdate data');
                     await fetchPageData(currentPage);
                     await fetchDashboardData();
-                    closeModal(document.getElementById('editModal'));
+                    closeModal(editModal);
                 } catch (error) { alert('Gagal mengupdate data: ' + error.message); }
             }
 
@@ -414,9 +487,29 @@
                 } catch (error) { alert('Gagal menghapus riwayat pembayaran. Periksa konsol untuk detail.'); }
             }
 
+            function loadSettings() {
+                const savedSettings = localStorage.getItem('paymentSettings');
+                if (savedSettings) {
+                    paymentSettings = JSON.parse(savedSettings);
+                } else {
+                    // Default values
+                    paymentSettings = { tahap1: 3500000, tahap2: 7000000 };
+                }
+                document.getElementById('tahap1Threshold').value = formatNumberInput(paymentSettings.tahap1);
+                document.getElementById('tahap2Threshold').value = formatNumberInput(paymentSettings.tahap2);
+            }
+
+            function saveSettings() {
+                paymentSettings.tahap1 = getRawNumber(document.getElementById('tahap1Threshold').value);
+                paymentSettings.tahap2 = getRawNumber(document.getElementById('tahap2Threshold').value);
+                localStorage.setItem('paymentSettings', JSON.stringify(paymentSettings));
+                closeModal(settingsModal);
+                fetchPageData(currentPage); // Refresh data with new settings
+            }
+
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('authToken');
-                window.location.href = 'login.html';
+                window.location.href = new URL('login.html', window.location.href).href;
             });
 
             exportCsvBtn.addEventListener('click', () => {
@@ -468,37 +561,27 @@
                 if(e.target.closest('img.proof-thumbnail')) openProofModal(e.target.closest('img.proof-thumbnail').src);
             });
 
-            filterBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    currentFilter = btn.getAttribute('data-filter');
-                    fetchPageData(1);
-                    
-                    // 1. Reset semua tombol ke style default (tidak aktif)
-                    filterBtns.forEach(b => {
-                        b.classList.remove('bg-blue-600', 'bg-green-600', 'bg-yellow-500', 'bg-red-600', 'text-white');
-                        b.classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-300');
-                    });
-                    
-                    // 2. Terapkan style aktif hanya pada tombol yang diklik
-                    btn.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-300');
-                    btn.classList.add('text-white');
+            filterDropdownBtn.addEventListener('click', () => {
+                filterDropdownMenu.classList.toggle('hidden');
+            });
 
-                    const filter = btn.getAttribute('data-filter');
-                    switch (filter) {
-                        case 'lunas':
-                            btn.classList.add('bg-green-600');
-                            break;
-                        case 'sebagian':
-                            btn.classList.add('bg-yellow-500');
-                            break;
-                        case 'belum':
-                            btn.classList.add('bg-red-600');
-                            break;
-                        default: // 'semua'
-                            btn.classList.add('bg-blue-600');
-                            break;
-                    }
-                });
+            filterDropdownMenu.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter-option')) {
+                    e.preventDefault();
+                    const filterValue = e.target.dataset.filter;
+                    const labelValue = e.target.dataset.label;
+
+                    currentFilter = filterValue;
+                    filterDropdownLabel.textContent = labelValue;
+                    filterDropdownMenu.classList.add('hidden');
+                    fetchPageData(1);
+                }
+            });
+
+            window.addEventListener('click', (e) => {
+                if (!filterDropdownBtn.contains(e.target) && !filterDropdownMenu.contains(e.target)) {
+                    filterDropdownMenu.classList.add('hidden');
+                }
             });
 
             document.querySelectorAll('.currency-input').forEach(input => {
@@ -519,7 +602,6 @@
                 setTimeout(() => modalElement.classList.add('hidden'), 300);
             }
 
-            // --- PERBAIKAN FINAL FUNGSI EDIT ---
             function openEditModal(id) {
                 const student = pageData.find(s => s.id === id);
                 if (!student) return;
@@ -527,13 +609,8 @@
                 document.getElementById('modalName').textContent = student.name;
                 const updateTotalBillInput = document.getElementById('updateTotalBill');
                 document.getElementById('editForm').reset();
-                
-                // 1. Ambil nilai dari DB (misal: "7000000.00") dan ubah jadi angka bulat
                 const billAsInteger = parseInt(student.totalBill, 10);
-                // 2. Gunakan fungsi format yang sudah benar untuk menampilkannya
                 updateTotalBillInput.value = formatNumberInput(billAsInteger);
-                
-                // 3. Tampilkan modal
                 openModal(editModal); 
             }
             
@@ -581,6 +658,21 @@
                 openModal(deleteModal);
             }
             
+            openAddModalBtn.addEventListener('click', () => {
+                addForm.reset();
+                openModal(addModal);
+            });
+            document.getElementById('closeAddModalBtn').addEventListener('click', () => closeModal(addModal));
+            document.getElementById('cancelAddModalBtn').addEventListener('click', () => closeModal(addModal));
+
+            openSettingsModalBtn.addEventListener('click', () => openModal(settingsModal));
+            document.getElementById('closeSettingsModalBtn').addEventListener('click', () => closeModal(settingsModal));
+            document.getElementById('cancelSettingsModalBtn').addEventListener('click', () => closeModal(settingsModal));
+            settingsForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveSettings();
+            });
+
             document.getElementById('closeModalBtn').addEventListener('click', () => closeModal(editModal));
             document.getElementById('cancelModalBtn').addEventListener('click', () => closeModal(editModal));
             document.getElementById('closeHistoryModalBtn').addEventListener('click', () => closeModal(historyModal));
@@ -610,6 +702,7 @@
                 updateStudent(id, formData);
             });
 
+            loadSettings();
             fetchPageData(1);
             fetchDashboardData();
         });

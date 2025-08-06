@@ -8,15 +8,13 @@ require_once __DIR__ . '/fpdf/fpdf.php'; // Pastikan path ini benar
 // Validasi token dari URL
 $user = validate_jwt_from_request();
 
-// --- PERUBAHAN DIMULAI DI SINI ---
-// Ambil status filter dari URL, default ke 'semua' jika tidak ada
+// Ambil status filter dan nilai ambang batas dari URL
 $statusFilter = isset($_GET['status']) ? $_GET['status'] : 'semua';
+$tahap1_threshold = isset($_GET['tahap1']) ? (float)$_GET['tahap1'] : 0;
+$tahap2_threshold = isset($_GET['tahap2']) ? (float)$_GET['tahap2'] : 0;
 
-// --- KELAS PDF KUSTOM (tidak ada perubahan di sini, tetap sama) ---
 class PDF_Report extends FPDF
 {
-    // ... (Seluruh isi kelas PDF_Report tetap sama seperti sebelumnya)
-    // Properti untuk menyimpan data ringkasan
     private $summaryData = [];
 
     public function setSummaryData($data)
@@ -24,10 +22,8 @@ class PDF_Report extends FPDF
         $this->summaryData = $data;
     }
 
-    // Header Halaman (Kop Surat)
     function Header()
     {
-        // Cek jika file logo ada
         $logoPath = __DIR__ . '/../img/logo_lembaga.png';
         if (file_exists($logoPath)) {
             $this->Image($logoPath, 10, 8, 25);
@@ -49,7 +45,6 @@ class PDF_Report extends FPDF
         $this->SetY(45);
     }
 
-    // Footer Halaman
     function Footer()
     {
         $this->SetY(-15);
@@ -58,11 +53,10 @@ class PDF_Report extends FPDF
         $this->Cell(0, 10, 'Halaman ' . $this->PageNo() . '/{nb}', 0, 0, 'R');
     }
 
-    // Kotak Ringkasan Data
     function SummaryBox()
     {
         $this->SetFont('Arial', 'B', 11);
-        $this->Cell(0, 10, 'Ringkasan Keuangan', 0, 1);
+        $this->Cell(0, 10, 'Ringkasan Keuangan (Berdasarkan Filter)', 0, 1);
 
         $this->SetFont('Arial', '', 10);
         $this->SetFillColor(240, 240, 240);
@@ -78,7 +72,6 @@ class PDF_Report extends FPDF
         $this->Cell(0, 10, 'Rp ' . number_format($this->summaryData['totalSisa'], 0, ',', '.'), 1, 1, 'R');
     }
 
-    // Tabel Data yang Didesain
     function FancyTable($header, $data)
     {
         $this->SetFillColor(4, 42, 122);
@@ -110,46 +103,82 @@ class PDF_Report extends FPDF
     }
 }
 
-
 try {
-    // --- Bangun Query Berdasarkan Filter ---
     $baseQuery = "SELECT s.id, s.name, s.total_bill AS totalBill, SUM(IFNULL(ph.amount, 0)) as totalPaid 
                   FROM students s 
                   LEFT JOIN payment_history ph ON s.id = ph.student_id 
                   GROUP BY s.id, s.name, s.total_bill";
 
     $havingClause = '';
-    if ($statusFilter === 'lunas') {
-        $havingClause = 'HAVING totalPaid >= totalBill';
-    } elseif ($statusFilter === 'sebagian') {
-        $havingClause = 'HAVING totalPaid > 0 AND totalPaid < totalBill';
-    } elseif ($statusFilter === 'belum') {
-        $havingClause = 'HAVING totalPaid = 0 OR totalPaid IS NULL';
+    $queryParams = [];
+
+    switch ($statusFilter) {
+        case 'lunas':
+            $havingClause = 'HAVING totalPaid >= totalBill';
+            break;
+        case 'lunas_tahap_2':
+            if ($tahap2_threshold > 0) {
+                $havingClause = 'HAVING totalPaid >= :tahap2 AND totalPaid < totalBill';
+                $queryParams[':tahap2'] = $tahap2_threshold;
+            }
+            break;
+        case 'lunas_tahap_1':
+            if ($tahap1_threshold > 0) {
+                $limitAtas = ($tahap2_threshold > $tahap1_threshold) ? ':tahap2_limit' : 'totalBill';
+                $havingClause = 'HAVING totalPaid >= :tahap1 AND totalPaid < ' . $limitAtas;
+                $queryParams[':tahap1'] = $tahap1_threshold;
+                if ($limitAtas == ':tahap2_limit') {
+                    $queryParams[':tahap2_limit'] = $tahap2_threshold;
+                }
+            }
+            break;
+        case 'sebagian':
+            $limitBawah = ($tahap1_threshold > 0) ? ':tahap1_limit' : '0';
+            if ($limitBawah != '0') {
+                $havingClause = 'HAVING totalPaid > 0 AND totalPaid < ' . $limitBawah;
+                $queryParams[':tahap1_limit'] = $tahap1_threshold;
+            } else {
+                $havingClause = 'HAVING totalPaid > 0';
+            }
+            break;
+        case 'belum':
+            $havingClause = 'HAVING totalPaid = 0 OR totalPaid IS NULL';
+            break;
     }
 
     $finalQuery = $baseQuery . ' ' . $havingClause . ' ORDER BY s.name';
 
-    $stmtStudents = $pdo->query($finalQuery);
+    $stmtStudents = $pdo->prepare($finalQuery);
+    $stmtStudents->execute($queryParams);
     $studentsData = $stmtStudents->fetchAll();
 
-    // Hitung ulang ringkasan berdasarkan data yang difilter
     $summaryTotalBill = 0;
     $summaryTotalPaid = 0;
     $dataForPdf = [];
 
     foreach ($studentsData as $student) {
-        $summaryTotalBill += $student['totalBill'];
-        $summaryTotalPaid += $student['totalPaid'];
+        $totalPaid = (float)$student['totalPaid'];
+        $totalBill = (float)$student['totalBill'];
+        $summaryTotalBill += $totalBill;
+        $summaryTotalPaid += $totalPaid;
 
-        $status = 'Belum';
-        if ($student['totalPaid'] >= $student['totalBill']) $status = 'Lunas';
-        elseif ($student['totalPaid'] > 0) $status = 'Sebagian';
+        // --- Logika Status Baru ---
+        $statusText = 'Belum Bayar';
+        if ($totalPaid >= $totalBill && $totalBill > 0) {
+            $statusText = 'Lunas Penuh';
+        } elseif ($tahap2_threshold > 0 && $totalPaid >= $tahap2_threshold) {
+            $statusText = 'Tahap 2';
+        } elseif ($tahap1_threshold > 0 && $totalPaid >= $tahap1_threshold) {
+            $statusText = 'Tahap 1';
+        } elseif ($totalPaid > 0) {
+            $statusText = 'Sebagian';
+        }
 
         $dataForPdf[] = [
             'name' => $student['name'],
-            'totalBill' => $student['totalBill'],
-            'totalPaid' => $student['totalPaid'],
-            'status' => $status
+            'totalBill' => $totalBill,
+            'totalPaid' => $totalPaid,
+            'status' => $statusText
         ];
     }
 
@@ -173,7 +202,7 @@ try {
     $pdf->Ln(5);
 
     $pdf->SetFont('Arial', 'B', 11);
-    $pdf->Cell(0, 10, 'Detail Pembayaran (Filter: ' . ucfirst($statusFilter) . ')', 0, 1);
+    $pdf->Cell(0, 10, 'Detail Pembayaran per Siswa (Filter: ' . ucfirst(str_replace('_', ' ', $statusFilter)) . ')', 0, 1);
     $header = ['No', 'Nama Siswa', 'Tagihan', 'Terbayar', 'Sisa', 'Status'];
     $pdf->FancyTable($header, $dataForPdf);
 

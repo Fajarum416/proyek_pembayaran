@@ -513,12 +513,12 @@
             });
 
             exportCsvBtn.addEventListener('click', () => {
-                if (authToken) window.open(`${API_BASE_URL}/export-csv.php?token=${authToken}&status=${currentFilter}`, '_blank');
+                if (authToken) window.open(`${API_BASE_URL}/export-csv.php?token=${authToken}&status=${currentFilter}&tahap1=${paymentSettings.tahap1}&tahap2=${paymentSettings.tahap2}`, '_blank');
                 else alert('Token tidak ditemukan, silakan login ulang.');
             });
 
             exportPdfBtn.addEventListener('click', () => {
-                if (authToken) window.open(`${API_BASE_URL}/export-pdf.php?token=${authToken}&status=${currentFilter}`, '_blank');
+                if (authToken) window.open(`${API_BASE_URL}/export-pdf.php?token=${authToken}&status=${currentFilter}&tahap1=${paymentSettings.tahap1}&tahap2=${paymentSettings.tahap2}`, '_blank');
                 else alert('Token tidak ditemukan, silakan login ulang.');
             });
 

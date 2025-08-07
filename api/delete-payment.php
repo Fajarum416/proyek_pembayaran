@@ -1,5 +1,5 @@
 <?php
-// api/delete-history.php
+// api/delete-payment.php
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/jwt.php';
@@ -12,27 +12,29 @@ if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     exit;
 }
 
-$transactionId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-if ($transactionId <= 0) {
+$paymentId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if ($paymentId <= 0) {
     http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'ID transaksi tidak valid.']);
+    echo json_encode(['status' => 'error', 'message' => 'ID pembayaran tidak valid.']);
     exit;
 }
 
 try {
+    // Ambil path gambar bukti untuk dihapus dari server
     $stmt = $pdo->prepare("SELECT proof_image_url FROM payment_history WHERE transaction_id = :id");
-    $stmt->execute([':id' => $transactionId]);
-    $history = $stmt->fetch();
+    $stmt->execute([':id' => $paymentId]);
+    $payment = $stmt->fetch();
 
-    if ($history && !empty($history['proof_image_url'])) {
-        $filePath = __DIR__ . '/..' . $history['proof_image_url'];
+    if ($payment && !empty($payment['proof_image_url'])) {
+        $filePath = __DIR__ . '/..' . $payment['proof_image_url'];
         if (file_exists($filePath)) {
             unlink($filePath);
         }
     }
 
+    // Hapus record dari database
     $stmt = $pdo->prepare("DELETE FROM payment_history WHERE transaction_id = :id");
-    $stmt->execute([':id' => $transactionId]);
+    $stmt->execute([':id' => $paymentId]);
 
     if ($stmt->rowCount() > 0) {
         http_response_code(200);
@@ -43,5 +45,5 @@ try {
     }
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus riwayat pembayaran.']);
+    echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus riwayat pembayaran.', 'error_detail' => $e->getMessage()]);
 }

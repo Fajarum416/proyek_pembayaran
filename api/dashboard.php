@@ -13,7 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $query = "SELECT (SELECT SUM(total_bill) FROM students) as totalBill, (SELECT SUM(amount) FROM payment_history) as totalPaid";
+    // --- PERUBAHAN QUERY ---
+    // Total tagihan sekarang dihitung dari SUM(amount) di tabel invoices
+    $query = "SELECT 
+                (SELECT SUM(amount) FROM invoices) as totalBill, 
+                (SELECT SUM(amount) FROM payment_history) as totalPaid";
+    // --- AKHIR PERUBAHAN ---
+
     $stmt = $pdo->query($query);
     $data = $stmt->fetch();
     $totalTagihan = (float)($data['totalBill'] ?? 0);

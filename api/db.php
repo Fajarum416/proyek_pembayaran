@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 
 $host = 'localhost';
-$dbname = 'pembayaran_db';
+$dbname = 'pembayaran_korea_db';
 $user = 'root';
 $pass = '';
 

@@ -22,97 +22,84 @@ switch ($method) {
 
 function handle_get_students($pdo)
 {
+    // --- PERUBAHAN DEFAULT SORTING ---
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-    $status = isset($_GET['status']) ? $_GET['status'] : 'semua';
     $search = isset($_GET['search']) ? $_GET['search'] : '';
+    $sort = isset($_GET['sort']) ? $_GET['sort'] : 'created_at'; // Default sort by created_at
+    $order = isset($_GET['order']) ? $_GET['order'] : 'desc'; // Default order descending
     $offset = ($page - 1) * $limit;
 
-    // Ambil nilai ambang batas dari parameter GET
-    $tahap1_threshold = isset($_GET['tahap1']) ? (float)$_GET['tahap1'] : 0;
-    $tahap2_threshold = isset($_GET['tahap2']) ? (float)$_GET['tahap2'] : 0;
-
-    $whereClauses = [];
-    $havingClauses = [];
-    $queryParams = [];
-
-    if (!empty($search)) {
-        $whereClauses[] = 's.name LIKE :search';
-        $queryParams[':search'] = '%' . $search . '%';
+    // Validasi untuk keamanan
+    $allowed_sort_columns = ['name', 'created_at'];
+    if (!in_array($sort, $allowed_sort_columns)) {
+        $sort = 'created_at';
     }
-    $whereSql = count($whereClauses) > 0 ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
-
-    // Logika HAVING clause baru dengan tahapan
-    switch ($status) {
-        case 'lunas':
-            $havingClauses[] = 'totalPaid >= s.total_bill';
-            break;
-        case 'lunas_tahap_2':
-            if ($tahap2_threshold > 0) {
-                $havingClauses[] = 'totalPaid >= :tahap2 AND totalPaid < s.total_bill';
-                $queryParams[':tahap2'] = $tahap2_threshold;
-            }
-            break;
-        case 'lunas_tahap_1':
-            if ($tahap1_threshold > 0) {
-                // Bayar antara tahap 1 dan tahap 2
-                $limitAtas = ($tahap2_threshold > $tahap1_threshold) ? $tahap2_threshold : 's.total_bill';
-                $havingClauses[] = 'totalPaid >= :tahap1 AND totalPaid < ' . $limitAtas;
-                $queryParams[':tahap1'] = $tahap1_threshold;
-                if ($limitAtas == ':tahap2_limit') {
-                    $queryParams[':tahap2_limit'] = $tahap2_threshold;
-                }
-            }
-            break;
-        case 'sebagian':
-            $limitBawah = ($tahap1_threshold > 0) ? $tahap1_threshold : 's.total_bill';
-            $havingClauses[] = 'totalPaid > 0 AND totalPaid < ' . $limitBawah;
-            if ($limitBawah == ':tahap1_limit') {
-                $queryParams[':tahap1_limit'] = $tahap1_threshold;
-            }
-            break;
-        case 'belum':
-            $havingClauses[] = 'totalPaid = 0 OR totalPaid IS NULL';
-            break;
-    }
-
-    $havingSql = count($havingClauses) > 0 ? 'HAVING ' . implode(' AND ', $havingClauses) : '';
+    $order = strtolower($order) === 'asc' ? 'ASC' : 'DESC';
 
     try {
-        $countQuery = "SELECT COUNT(*) as total FROM (SELECT s.id, s.total_bill, SUM(IFNULL(ph.amount, 0)) as totalPaid FROM students s LEFT JOIN payment_history ph ON s.id = ph.student_id $whereSql GROUP BY s.id, s.total_bill $havingSql) as filtered_students";
-        $stmt = $pdo->prepare($countQuery);
-        $stmt->execute($queryParams);
-        $total = $stmt->fetchColumn();
-        $totalPages = ceil($total / $limit);
-
-        $dataQuery = "SELECT s.id, s.name, s.total_bill AS totalBill, SUM(IFNULL(ph.amount, 0)) as totalPaid FROM students s LEFT JOIN payment_history ph ON s.id = ph.student_id $whereSql GROUP BY s.id, s.name, s.total_bill $havingSql ORDER BY s.id LIMIT :limit OFFSET :offset";
-        $stmt = $pdo->prepare($dataQuery);
-        foreach ($queryParams as $key => $value) {
-            $stmt->bindValue($key, $value);
+        $whereClause = '';
+        $params = [];
+        if (!empty($search)) {
+            $whereClause = " WHERE name LIKE :search";
+            $params[':search'] = '%' . $search . '%';
         }
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
-        $students = $stmt->fetchAll();
+
+        // --- QUERY UNTUK MENGHITUNG TOTAL DATA ---
+        $countQuery = "SELECT COUNT(id) FROM students" . $whereClause;
+        $stmtCount = $pdo->prepare($countQuery);
+        $stmtCount->execute($params);
+        $totalRecords = $stmtCount->fetchColumn();
+        $totalPages = ceil($totalRecords / $limit);
+
+        // --- QUERY UTAMA DENGAN SORTING DAN PAGINATION ---
+        $queryStudents = "SELECT id, name, created_at FROM students" . $whereClause . " ORDER BY $sort $order LIMIT :limit OFFSET :offset";
+
+        $stmtStudents = $pdo->prepare($queryStudents);
+        foreach ($params as $key => &$val) {
+            $stmtStudents->bindParam($key, $val);
+        }
+        $stmtStudents->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmtStudents->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmtStudents->execute();
+        $students = $stmtStudents->fetchAll(PDO::FETCH_ASSOC);
 
         if (count($students) > 0) {
             $studentIds = array_map(fn($s) => $s['id'], $students);
             $placeholders = implode(',', array_fill(0, count($studentIds), '?'));
-            $historyQuery = "SELECT transaction_id as transactionId, student_id, payment_date as date, amount, proof_image_url as proof FROM payment_history WHERE student_id IN ($placeholders) ORDER BY payment_date DESC";
-            $stmt = $pdo->prepare($historyQuery);
-            $stmt->execute($studentIds);
-            $history = $stmt->fetchAll();
+
+            $queryInvoices = "SELECT id, student_id, description, amount FROM invoices WHERE student_id IN ($placeholders)";
+            $stmtInvoices = $pdo->prepare($queryInvoices);
+            $stmtInvoices->execute($studentIds);
+            $invoices = $stmtInvoices->fetchAll(PDO::FETCH_ASSOC);
+
+            $queryHistory = "SELECT transaction_id as transactionId, student_id, invoice_id, payment_date as date, amount, proof_image_url as proof FROM payment_history WHERE student_id IN ($placeholders) ORDER BY payment_date DESC";
+            $stmtHistory = $pdo->prepare($queryHistory);
+            $stmtHistory->execute($studentIds);
+            $history = $stmtHistory->fetchAll(PDO::FETCH_ASSOC);
 
             $historyMap = [];
-            foreach ($history as $record) {
-                $historyMap[$record['student_id']][] = $record;
+            foreach ($history as $h) {
+                $historyMap[$h['invoice_id']][] = $h;
             }
+
+            $invoiceMap = [];
+            foreach ($invoices as $inv) {
+                $inv['payments'] = $historyMap[$inv['id']] ?? [];
+                $invoiceMap[$inv['student_id']][] = $inv;
+            }
+
             foreach ($students as &$student) {
-                $student['paymentHistory'] = $historyMap[$student['id']] ?? [];
+                $student['invoices'] = $invoiceMap[$student['id']] ?? [];
             }
         }
 
-        echo json_encode(['data' => $students, 'totalPages' => $totalPages, 'currentPage' => $page]);
+        // --- MENGEMBALIKAN DATA PAGINASI KE FRONTEND ---
+        echo json_encode([
+            'data' => $students,
+            'totalPages' => $totalPages,
+            'currentPage' => $page
+        ]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['status' => 'error', 'message' => 'Gagal mengambil data siswa.', 'error_detail' => $e->getMessage()]);
@@ -121,43 +108,22 @@ function handle_get_students($pdo)
 
 function handle_post_student($pdo)
 {
-    $name = isset($_POST['name']) ? htmlspecialchars(strip_tags($_POST['name'])) : null;
-    $totalBill = isset($_POST['totalBill']) ? filter_var($_POST['totalBill'], FILTER_SANITIZE_NUMBER_INT) : null;
-    $amount = isset($_POST['amount']) ? filter_var($_POST['amount'], FILTER_SANITIZE_NUMBER_INT) : 0;
+    $data = json_decode(file_get_contents("php://input"));
+    $name = isset($data->name) ? htmlspecialchars(strip_tags($data->name)) : null;
 
-    if (!$name || !$totalBill) {
+    if (!$name) {
         http_response_code(400);
-        echo json_encode(['status' => 'error', 'message' => 'Nama dan Total Tagihan wajib diisi.']);
+        echo json_encode(['status' => 'error', 'message' => 'Nama wajib diisi.']);
         exit;
     }
 
-    $proofPath = null;
-    if (isset($_FILES['proof']) && $_FILES['proof']['error'] == 0) {
-        $uploadDir = __DIR__ . '/../uploads/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-        $fileName = time() . '-' . basename($_FILES['proof']['name']);
-        $targetFile = $uploadDir . $fileName;
-        if (move_uploaded_file($_FILES['proof']['tmp_name'], $targetFile)) {
-            $proofPath = '/uploads/' . $fileName;
-        }
-    }
-
     try {
-        $pdo->beginTransaction();
-        $stmt = $pdo->prepare("INSERT INTO students (name, total_bill) VALUES (:name, :total_bill)");
-        $stmt->execute([':name' => $name, ':total_bill' => $totalBill]);
-        $studentId = $pdo->lastInsertId();
+        $stmt = $pdo->prepare("INSERT INTO students (name) VALUES (:name)");
+        $stmt->execute([':name' => $name]);
 
-        if ($amount > 0) {
-            $stmt = $pdo->prepare("INSERT INTO payment_history (student_id, payment_date, amount, proof_image_url) VALUES (:sid, :pdate, :amount, :proof)");
-            $stmt->execute([':sid' => $studentId, ':pdate' => date('Y-m-d'), ':amount' => $amount, ':proof' => $proofPath]);
-        }
-
-        $pdo->commit();
         http_response_code(201);
         echo json_encode(['status' => 'success', 'message' => 'Siswa berhasil ditambahkan.']);
     } catch (Exception $e) {
-        $pdo->rollBack();
         http_response_code(500);
         echo json_encode(['status' => 'error', 'message' => 'Gagal menambahkan siswa.']);
     }

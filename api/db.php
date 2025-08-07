@@ -4,7 +4,7 @@
 // --- START CORS & PREFLIGHT HANDLING ---
 // Baris ini mengizinkan skrip dari domain mana pun untuk mengakses API Anda.
 // Untuk production, sebaiknya ganti '*' dengan domain frontend Anda, contoh: 'http://website-anda.com'
-header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Origin: https://lpkyamaguchikorea.com");
 
 // Baris ini memberitahu browser header apa saja yang diizinkan dalam permintaan.
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 
 $host = 'localhost';
-$dbname = 'pembayaran_korea_db';
-$user = 'root';
-$pass = '';
+$dbname = 'u562381918_ymikoreadata';
+$user = 'u562381918_ymikoreadata';
+$pass = 'Ymiid123';
 
 // Header ini tetap diperlukan untuk respons API utama Anda.
 header("Content-Type: application/json");

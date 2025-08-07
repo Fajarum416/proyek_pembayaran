@@ -5,39 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Aplikasi Pembayaran</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+    <!-- Skrip untuk menerapkan tema yang sudah ada -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Login </h2>
+<body class="bg-slate-50 dark:bg-slate-900 flex items-center justify-center h-screen p-4">
+    <div class="w-full max-w-md bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 relative">
+        
+        <h2 class="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-6">Selamat Datang</h2>
         <form id="loginForm">
             <div class="mb-4">
-                <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
-                <input type="text" id="username" name="username" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <label for="username" class="block text-slate-700 dark:text-slate-300 text-sm font-bold mb-2">Username</label>
+                <input type="text" id="username" name="username" class="shadow-sm appearance-none border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg w-full py-3 px-4 text-slate-700 dark:text-slate-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
             <div class="mb-6">
-                <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                <input type="password" id="password" name="password" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                <label for="password" class="block text-slate-700 dark:text-slate-300 text-sm font-bold mb-2">Password</label>
+                <input type="password" id="password" name="password" class="shadow-sm appearance-none border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg w-full py-3 px-4 text-slate-700 dark:text-slate-200 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
             <div id="errorMessage" class="text-red-500 text-center text-sm mb-4 hidden"></div>
             <div class="flex items-center justify-between">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline w-full">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline w-full transition-colors">
                     Masuk
                 </button>
             </div>
         </form>
-         <p class="text-center text-gray-500 text-xs mt-6">
-            Belum punya akun? Hubungi administrator untuk registrasi.
+         <p class="text-center text-slate-500 dark:text-slate-400 text-xs mt-6">
+            Belum punya akun? Hubungi administrator.
         </p>
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost/proyek_pembayaran';
+    const API_BASE_URL = 'http://localhost/proyek_pembayaran';
     const loginForm = document.getElementById('loginForm');
     const errorMessage = document.getElementById('errorMessage');
     
-    // PERIKSA token dengan key yang benar: 'authToken'
-    if (localStorage.getItem('authToken')) { // <-- DIUBAH
+    if (localStorage.getItem('authToken')) {
         window.location.href = 'index.html';
     }
     
@@ -60,8 +71,7 @@
             const result = await response.json();
     
             if (response.ok) {
-                // SIMPAN token dengan key yang benar: 'authToken'
-                localStorage.setItem('authToken', result.token); // <-- DIUBAH
+                localStorage.setItem('authToken', result.token);
                 window.location.href = 'index.html';
             } else {
                 errorMessage.textContent = result.message || 'Login gagal';
@@ -72,6 +82,6 @@
             errorMessage.classList.remove('hidden');
         }
     });
-        </script>
+    </script>
 </body>
 </html>

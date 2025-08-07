@@ -1,3 +1,4 @@
+<!-- File: index.html (Dengan Fitur Dark Mode di Dashboard) -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -5,99 +6,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Pembayaran | LPK YAMAGUCHI INDONESIA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .status-lunas { background-color: #10B981; color: white; }
-        .status-sebagian { background-color: #F59E0B; color: white; }
-        .status-belum { background-color: #EF4444; color: white; }
-        .modal-backdrop { background-color: rgba(0,0,0,0.6); }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        body { font-family: 'Poppins', sans-serif; }
+        .modal-backdrop { background-color: rgba(0,0,0,0.6); transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s ease, opacity 0.3s ease; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        tr.student-row:hover { background-color: #f9fafb; }
         .pagination-btn { min-width: 40px; }
-        .pagination-btn.active { background-color: #2563EB; color: white; border-color: #2563EB; }
+        .pagination-btn.active { background-color: #1e40af; color: white; border-color: #1e40af; }
     </style>
+    <!-- Skrip untuk mencegah FOUC (Flash of Unstyled Content) -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         
-        <header class="text-center mb-8 relative">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Laporan Pembayaran Siswa</h1>
-            <p class="text-gray-600 mt-2">Kelola tagihan dan riwayat pembayaran siswa.</p>
-            <button id="logoutBtn" class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">
-                <i class="fas fa-sign-out-alt mr-2"></i>Logout
-            </button>
+        <!-- Header Baru -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800 dark:text-slate-100">Dashboard Pembayaran</h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">Selamat datang kembali, Admin!</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="theme-toggle" type="button" class="text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm p-2.5">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 7.072l.707-.707a1 1 0 10-1.414-1.414l-.707.707a1 1 0 001.414 1.414zM3 11a1 1 0 100-2H2a1 1 0 100 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                </button>
+                <button id="logoutBtn" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-500 font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
         </header>
 
-        <!-- Ringkasan Dashboard -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="bg-white p-5 rounded-xl shadow-md flex items-center gap-4">
-                <div class="bg-blue-100 p-3 rounded-full"><i class="fas fa-file-invoice-dollar fa-lg text-blue-600"></i></div>
+        <!-- Ringkasan Dashboard Baru -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-start">
                 <div>
-                    <p class="text-gray-500 text-sm">Akumulasi Tagihan</p>
-                    <p id="totalTagihan" class="text-2xl font-bold text-gray-800">Rp 0</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Akumulasi Tagihan</p>
+                    <p id="totalTagihan" class="text-3xl font-bold text-slate-800 dark:text-slate-100 mt-1">Rp 0</p>
+                </div>
+                <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
+                    <i class="fas fa-file-invoice-dollar fa-lg"></i>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-xl shadow-md flex items-center gap-4">
-                <div class="bg-green-100 p-3 rounded-full"><i class="fas fa-check-circle fa-lg text-green-600"></i></div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-start">
                 <div>
-                    <p class="text-gray-500 text-sm">Total Terbayar</p>
-                    <p id="totalTerbayar" class="text-2xl font-bold text-green-600">Rp 0</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Terbayar</p>
+                    <p id="totalTerbayar" class="text-3xl font-bold text-green-600 mt-1">Rp 0</p>
+                </div>
+                 <div class="bg-green-100 text-green-600 p-3 rounded-full">
+                    <i class="fas fa-check-circle fa-lg"></i>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-xl shadow-md flex items-center gap-4">
-                <div class="bg-red-100 p-3 rounded-full"><i class="fas fa-exclamation-circle fa-lg text-red-600"></i></div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-start">
                 <div>
-                    <p class="text-gray-500 text-sm">Total Sisa Tagihan</p>
-                    <p id="totalSisa" class="text-2xl font-bold text-red-600">Rp 0</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Sisa Tagihan</p>
+                    <p id="totalSisa" class="text-3xl font-bold text-red-600 mt-1">Rp 0</p>
+                </div>
+                 <div class="bg-red-100 text-red-600 p-3 rounded-full">
+                    <i class="fas fa-exclamation-circle fa-lg"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Pencarian dan Tombol Aksi -->
-        <div class="bg-white p-4 rounded-xl shadow-md mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
-             <div class="flex-1 w-full md:w-auto">
-                <button id="openAddStudentModalBtn" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg">
-                    <i class="fas fa-user-plus mr-2"></i>Tambah Siswa Baru
-                </button>
-             </div>
-             <div class="flex gap-4 items-center">
-                <div class="relative w-full md:w-auto">
-                    <input type="text" id="searchInput" placeholder="Cari nama siswa..." class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                </div>
-                <div>
-                    <select id="sortControl" class="p-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="created_at-desc">Terbaru</option>
-                        <option value="created_at-asc">Terlama</option>
-                        <option value="name-asc">Nama (A-Z)</option>
-                        <option value="name-desc">Nama (Z-A)</option>
-                    </select>
-                </div>
-             </div>
+        <!-- Area Aksi dan Filter Baru -->
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 mb-6">
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+                 <div class="flex-1 w-full md:w-auto flex flex-col sm:flex-row gap-3">
+                    <button id="openAddStudentModalBtn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                        <i class="fas fa-user-plus"></i>Tambah Siswa
+                    </button>
+                     <button id="openPdfModalBtn" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                        <i class="fas fa-file-pdf"></i>Ekspor PDF
+                    </button>
+                 </div>
+                 <div class="flex w-full md:w-auto gap-3">
+                    <div class="relative flex-grow">
+                        <input type="text" id="searchInput" placeholder="Cari nama..." class="w-full p-2.5 pl-10 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
+                    <div>
+                        <select id="sortControl" class="p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="created_at-desc">Terbaru</option>
+                            <option value="created_at-asc">Terlama</option>
+                            <option value="name-asc">Nama (A-Z)</option>
+                            <option value="name-desc">Nama (Z-A)</option>
+                        </select>
+                    </div>
+                 </div>
+            </div>
         </div>
 
-        <!-- Tabel Data Siswa -->
-        <div class="bg-white rounded-xl shadow-md overflow-x-auto">
+        <!-- Tabel Data Siswa Baru -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-x-auto">
             <table class="w-full text-left">
-                <thead class="bg-gray-100">
+                <thead class="bg-slate-50 dark:bg-slate-700/50">
                     <tr>
-                        <th class="p-4 font-semibold text-sm text-gray-600">Nama Siswa</th>
-                        <th class="p-4 font-semibold text-sm text-gray-600">Total Tagihan</th>
-                        <th class="p-4 font-semibold text-sm text-gray-600">Total Terbayar</th>
-                        <th class="p-4 font-semibold text-sm text-gray-600">Sisa</th>
-                        <th class="p-4 font-semibold text-sm text-gray-600 text-center">Aksi</th>
+                        <th class="p-4 font-semibold text-sm text-slate-600 dark:text-slate-300 tracking-wider">NAMA SISWA</th>
+                        <th class="p-4 font-semibold text-sm text-slate-600 dark:text-slate-300 tracking-wider">TOTAL TAGIHAN</th>
+                        <th class="p-4 font-semibold text-sm text-slate-600 dark:text-slate-300 tracking-wider">TOTAL TERBAYAR</th>
+                        <th class="p-4 font-semibold text-sm text-slate-600 dark:text-slate-300 tracking-wider">SISA</th>
+                        <th class="p-4 font-semibold text-sm text-slate-600 dark:text-slate-300 tracking-wider text-center">AKSI</th>
                     </tr>
                 </thead>
-                <tbody id="studentsTableBody"></tbody>
+                <tbody id="studentsTableBody" class="divide-y divide-slate-200 dark:divide-slate-700"></tbody>
             </table>
-            <div id="emptyState" class="text-center p-10 text-gray-500 hidden">
+            <div id="emptyState" class="text-center p-10 text-slate-500 dark:text-slate-400 hidden">
                 <p>Tidak ada data siswa yang ditemukan.</p>
             </div>
-            <div id="loadingState" class="text-center p-10 text-gray-500 hidden">
+            <div id="loadingState" class="text-center p-10 text-slate-500 dark:text-slate-400 hidden">
                 <div class="flex justify-center items-center"><div class="loader"></div><span class="ml-4">Memuat data...</span></div>
             </div>
         </div>
@@ -107,20 +136,57 @@
     </div>
 
     <!-- MODALS -->
+    <!-- Modal Export PDF -->
+    <div id="pdfModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-lg">
+            <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Buat Laporan PDF</h3>
+                <button class="close-modal-btn text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
+            </div>
+            <form id="pdfForm" class="p-5">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Jenis Laporan</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="report_type" value="rekap" class="form-radio" checked>
+                                <span class="ml-2">Rekapitulasi Global</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="report_type" value="detail" class="form-radio">
+                                <span class="ml-2">Laporan Detail</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="invoiceFilterContainer" class="hidden">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pilih Tagihan</label>
+                        <div id="invoiceCheckboxContainer" class="mt-2 p-3 border border-slate-200 dark:border-slate-600 rounded-lg max-h-40 overflow-y-auto space-y-2">
+                            <!-- Checkboxes will be inserted here by JS -->
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" class="close-modal-btn bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold py-2 px-4 rounded-lg">Batal</button>
+                    <button type="submit" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg">Buat Laporan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Modal Tambah Siswa -->
     <div id="addStudentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="p-5 border-b flex justify-between items-center">
-                <h3 class="text-xl font-semibold">Tambah Siswa Baru</h3>
-                <button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Tambah Siswa Baru</h3>
+                <button class="close-modal-btn text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
             </div>
             <form id="addStudentForm" class="p-5">
                 <div>
-                    <label for="newStudentName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                    <input type="text" id="newStudentName" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    <label for="newStudentName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
+                    <input type="text" id="newStudentName" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg" required>
                 </div>
                 <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" class="close-modal-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg">Batal</button>
+                    <button type="button" class="close-modal-btn bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold py-2 px-4 rounded-lg">Batal</button>
                     <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">Simpan</button>
                 </div>
             </form>
@@ -129,25 +195,25 @@
 
     <!-- Modal Tambah Tagihan -->
     <div id="addInvoiceModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="p-5 border-b flex justify-between items-center">
-                <h3 class="text-xl font-semibold">Tambah Tagihan untuk <span id="addInvoiceStudentName" class="text-blue-600"></span></h3>
-                <button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Tambah Tagihan untuk <span id="addInvoiceStudentName" class="text-blue-600"></span></h3>
+                <button class="close-modal-btn text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
             </div>
             <form id="addInvoiceForm" class="p-5">
                 <input type="hidden" id="addInvoiceStudentId">
                 <div class="space-y-4">
                     <div>
-                        <label for="newInvoiceDescription" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Tagihan</label>
-                        <input type="text" id="newInvoiceDescription" placeholder="Contoh: Ujian EPS Topik" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                        <label for="newInvoiceDescription" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Deskripsi Tagihan</label>
+                        <input type="text" id="newInvoiceDescription" placeholder="Contoh: Ujian EPS Topik" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg" required>
                     </div>
                     <div>
-                        <label for="newInvoiceAmount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tagihan</label>
-                        <input type="text" id="newInvoiceAmount" placeholder="Contoh: 500.000" class="currency-input w-full p-3 border border-gray-300 rounded-lg" required>
+                        <label for="newInvoiceAmount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Jumlah Tagihan</label>
+                        <input type="text" id="newInvoiceAmount" placeholder="Contoh: 500.000" class="currency-input w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg" required>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" class="close-modal-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg">Batal</button>
+                    <button type="button" class="close-modal-btn bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold py-2 px-4 rounded-lg">Batal</button>
                     <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">Simpan Tagihan</button>
                 </div>
             </form>
@@ -156,25 +222,25 @@
 
     <!-- Modal Edit Tagihan -->
     <div id="editInvoiceModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="p-5 border-b flex justify-between items-center">
-                <h3 class="text-xl font-semibold">Edit Tagihan</h3>
-                <button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Edit Tagihan</h3>
+                <button class="close-modal-btn text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
             </div>
             <form id="editInvoiceForm" class="p-5">
                 <input type="hidden" id="editInvoiceId">
                 <div class="space-y-4">
                     <div>
-                        <label for="editInvoiceDescription" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Tagihan</label>
-                        <input type="text" id="editInvoiceDescription" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                        <label for="editInvoiceDescription" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Deskripsi Tagihan</label>
+                        <input type="text" id="editInvoiceDescription" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg" required>
                     </div>
                     <div>
-                        <label for="editInvoiceAmount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tagihan</label>
-                        <input type="text" id="editInvoiceAmount" class="currency-input w-full p-3 border border-gray-300 rounded-lg" required>
+                        <label for="editInvoiceAmount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Jumlah Tagihan</label>
+                        <input type="text" id="editInvoiceAmount" class="currency-input w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg" required>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" class="close-modal-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg">Batal</button>
+                    <button type="button" class="close-modal-btn bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold py-2 px-4 rounded-lg">Batal</button>
                     <button type="submit" class="bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg">Update Tagihan</button>
                 </div>
             </form>
@@ -183,30 +249,30 @@
 
     <!-- Modal Tambah Pembayaran -->
     <div id="addPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="p-5 border-b flex justify-between items-center">
-                <h3 class="text-xl font-semibold">Tambah Pembayaran</h3>
-                <button class="close-modal-btn text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Tambah Pembayaran</h3>
+                <button class="close-modal-btn text-slate-400 hover:text-slate-600 text-3xl">&times;</button>
             </div>
             <form id="addPaymentForm" class="p-5">
                 <input type="hidden" id="addPaymentStudentId">
                 <p class="mb-4">Untuk: <span id="addPaymentStudentName" class="font-bold"></span></p>
                 <div class="space-y-4">
                     <div>
-                        <label for="paymentInvoiceSelect" class="block text-sm font-medium text-gray-700 mb-1">Pilih Tagihan</label>
-                        <select id="paymentInvoiceSelect" class="w-full p-3 border border-gray-300 rounded-lg bg-white" required></select>
+                        <label for="paymentInvoiceSelect" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pilih Tagihan</label>
+                        <select id="paymentInvoiceSelect" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg" required></select>
                     </div>
                     <div>
-                        <label for="paymentAmount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Pembayaran</label>
-                        <input type="text" id="paymentAmount" class="currency-input w-full p-3 border border-gray-300 rounded-lg" required>
+                        <label for="paymentAmount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Jumlah Pembayaran</label>
+                        <input type="text" id="paymentAmount" class="currency-input w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg" required>
                     </div>
                     <div>
-                        <label for="paymentProof" class="block text-sm font-medium text-gray-700 mb-1">Upload Bukti (Opsional)</label>
-                        <input type="file" id="paymentProof" name="proof" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <label for="paymentProof" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Upload Bukti (Opsional)</label>
+                        <input type="file" id="paymentProof" name="proof" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-slate-600 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-slate-500">
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" class="close-modal-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg">Batal</button>
+                    <button type="button" class="close-modal-btn bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold py-2 px-4 rounded-lg">Batal</button>
                     <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">Simpan Pembayaran</button>
                 </div>
             </form>
@@ -215,19 +281,19 @@
 
     <!-- Modal Konfirmasi Hapus -->
     <div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-sm">
             <div class="p-6 text-center">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                     <i class="fas fa-exclamation-triangle fa-lg text-red-600"></i>
                 </div>
-                <h3 id="deleteModalTitle" class="text-lg font-medium text-gray-900 mt-5">Hapus Data</h3>
-                <p id="deleteModalMessage" class="mt-2 text-sm text-gray-500">Apakah Anda yakin? Tindakan ini tidak dapat dibatalkan.</p>
+                <h3 id="deleteModalTitle" class="text-lg font-medium text-slate-900 dark:text-slate-100 mt-5">Hapus Data</h3>
+                <p id="deleteModalMessage" class="mt-2 text-sm text-slate-500 dark:text-slate-400">Apakah Anda yakin? Tindakan ini tidak dapat dibatalkan.</p>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+            <div class="bg-slate-50 dark:bg-slate-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
                 <button type="button" id="confirmDeleteBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">
                     Hapus
                 </button>
-                <button type="button" class="close-modal-btn mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                <button type="button" class="close-modal-btn mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:w-auto sm:text-sm">
                     Batal
                 </button>
             </div>
@@ -239,7 +305,7 @@
         // Redirect if not logged in
         (() => {
             if (!localStorage.getItem('authToken')) {
-                window.location.href = new URL('login.html', window.location.href).href;
+                window.location.href = 'login.html';
             }
         })();
 
@@ -249,7 +315,6 @@
             let studentsData = [];
             let itemToDelete = { type: null, id: null };
             
-            // --- STATE MANAGEMENT BARU ---
             let currentPage = 1;
             let currentSort = 'created_at';
             let currentOrder = 'desc';
@@ -279,7 +344,7 @@
                 const response = await fetch(url, { ...options, headers });
                 if (response.status === 401) {
                     localStorage.removeItem('authToken');
-                    window.location.href = new URL('login.html', window.location.href).href;
+                    window.location.href = 'login.html';
                 }
                 return response;
             }
@@ -348,23 +413,23 @@
                     const sisa = totalBill - totalPaid;
 
                     const row = document.createElement('tr');
-                    row.className = 'student-row border-b border-gray-200 cursor-pointer';
+                    row.className = 'student-row cursor-pointer';
                     row.innerHTML = `
-                        <td class="p-4 font-medium">${student.name}</td>
+                        <td class="p-4 font-medium text-slate-800 dark:text-slate-100">${student.name}</td>
                         <td class="p-4">${formatCurrency(totalBill)}</td>
                         <td class="p-4 text-green-600 font-semibold">${formatCurrency(totalPaid)}</td>
                         <td class="p-4 text-red-600 font-semibold">${formatCurrency(sisa > 0 ? sisa : 0)}</td>
                         <td class="p-4 text-center space-x-2">
-                            <button class="btn-add-invoice bg-green-500 text-white py-1 px-3 rounded" data-id="${student.id}" data-name="${student.name}" title="Tambah Tagihan"><i class="fas fa-plus"></i></button>
-                            <button class="btn-add-payment bg-blue-500 text-white py-1 px-3 rounded" data-id="${student.id}" data-name="${student.name}" title="Tambah Pembayaran"><i class="fas fa-money-bill-wave"></i></button>
-                            <button class="btn-delete-student bg-red-500 text-white py-1 px-3 rounded" data-id="${student.id}" data-name="${student.name}" title="Hapus Siswa"><i class="fas fa-trash"></i></button>
+                            <button class="btn-add-invoice bg-green-100 text-green-700 hover:bg-green-200 text-xs font-bold py-2 px-3 rounded-lg" data-id="${student.id}" data-name="${student.name}" title="Tambah Tagihan"><i class="fas fa-plus"></i></button>
+                            <button class="btn-add-payment bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs font-bold py-2 px-3 rounded-lg" data-id="${student.id}" data-name="${student.name}" title="Tambah Pembayaran"><i class="fas fa-money-bill-wave"></i></button>
+                            <button class="btn-delete-student bg-red-100 text-red-700 hover:bg-red-200 text-xs font-bold py-2 px-3 rounded-lg" data-id="${student.id}" data-name="${student.name}" title="Hapus Siswa"><i class="fas fa-trash"></i></button>
                         </td>
                     `;
                     tableBody.appendChild(row);
 
                     const detailRow = document.createElement('tr');
-                    detailRow.className = 'detail-row hidden bg-gray-50';
-                    detailRow.innerHTML = `<td colspan="5" class="p-4">${renderDetailContent(student)}</td>`;
+                    detailRow.className = 'detail-row hidden';
+                    detailRow.innerHTML = `<td colspan="5" class="p-4 bg-slate-50 dark:bg-slate-800/50">${renderDetailContent(student)}</td>`;
                     tableBody.appendChild(detailRow);
 
                     row.addEventListener('click', (e) => {
@@ -376,20 +441,20 @@
 
             function renderDetailContent(student) {
                 if (student.invoices.length === 0) {
-                    return '<p class="text-gray-500">Belum ada tagihan untuk siswa ini.</p>';
+                    return '<p class="text-slate-500 dark:text-slate-400">Belum ada tagihan untuk siswa ini.</p>';
                 }
-                let html = '<div class="space-y-4">';
+                let html = '<div class="space-y-3">';
                 student.invoices.forEach(inv => {
                     const paidForInvoice = inv.payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
                     const remainingForInvoice = parseFloat(inv.amount) - paidForInvoice;
-                    let statusClass = 'status-belum';
-                    if (paidForInvoice > 0) statusClass = remainingForInvoice <= 0 ? 'status-lunas' : 'status-sebagian';
+                    let statusClass = 'bg-red-100 text-red-700';
+                    if (paidForInvoice > 0) statusClass = remainingForInvoice <= 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700';
 
                     html += `
-                        <div class="border border-gray-200 rounded-lg p-3">
+                        <div class="border border-slate-200 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-slate-800">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold">${inv.description}</p>
+                                    <p class="font-semibold text-slate-800 dark:text-slate-200">${inv.description}</p>
                                     <span class="text-xs font-bold px-2 py-1 rounded-full ${statusClass}">
                                         ${formatCurrency(paidForInvoice)} / ${formatCurrency(inv.amount)}
                                     </span>
@@ -408,12 +473,12 @@
             }
 
             function renderPaymentHistory(payments) {
-                if (payments.length === 0) return '<p class="text-xs text-gray-400 mt-2">Belum ada pembayaran.</p>';
-                let listHtml = '<ul class="mt-2 text-sm space-y-1">';
+                if (payments.length === 0) return '<p class="text-xs text-slate-400 mt-2">Belum ada pembayaran.</p>';
+                let listHtml = '<ul class="mt-2 text-sm space-y-1 divide-y divide-slate-100 dark:divide-slate-700">';
                 payments.forEach(p => {
-                    listHtml += `<li class="flex justify-between items-center text-xs border-t border-gray-100 pt-1">
+                    listHtml += `<li class="flex justify-between items-center text-xs pt-1">
                         <span>
-                            ${new Date(p.date).toLocaleDateString('id-ID')} - ${formatCurrency(p.amount)}
+                            ${new Date(p.date).toLocaleDateString('id-ID')} - <span class="font-medium text-slate-800 dark:text-slate-200">${formatCurrency(p.amount)}</span>
                             ${p.proof ? `<a href="${API_BASE_URL.replace('/api', '')}${p.proof}" target="_blank" class="text-blue-500 hover:underline ml-2">Lihat Bukti</a>` : ''}
                         </span>
                         <button class="btn-delete-payment text-red-400 hover:text-red-600" data-payment-id="${p.transactionId}" title="Hapus Pembayaran"><i class="fas fa-times-circle"></i></button>
@@ -431,7 +496,7 @@
                 const createBtn = (p, text, isDisabled = false) => {
                     const button = document.createElement('button');
                     button.innerHTML = text;
-                    button.className = `pagination-btn h-10 px-4 rounded-lg bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 ${p === page ? 'active' : ''} ${isDisabled ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''}`;
+                    button.className = `pagination-btn h-10 px-4 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 ${p === page ? 'active' : ''} ${isDisabled ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''}`;
                     button.disabled = isDisabled;
                     button.addEventListener('click', () => {
                         currentPage = p;
@@ -471,14 +536,14 @@
             // EVENT LISTENERS
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 localStorage.removeItem('authToken');
-                window.location.href = new URL('login.html', window.location.href).href;
+                window.location.href = 'login.html';
             });
 
             document.getElementById('searchInput').addEventListener('input', (e) => {
                 clearTimeout(searchDebounce);
                 searchDebounce = setTimeout(() => {
                     searchQuery = e.target.value;
-                    currentPage = 1; // Reset ke halaman 1 saat mencari
+                    currentPage = 1;
                     fetchStudents();
                 }, 300);
             });
@@ -487,7 +552,7 @@
                 const [sort, order] = e.target.value.split('-');
                 currentSort = sort;
                 currentOrder = order;
-                currentPage = 1; // Reset ke halaman 1 saat ganti urutan
+                currentPage = 1;
                 fetchStudents();
             });
             
@@ -642,6 +707,115 @@
             document.querySelectorAll('.currency-input').forEach(input => {
                 input.addEventListener('input', (e) => { e.target.value = formatNumberInput(e.target.value); });
             });
+
+            // PDF Modal Logic
+            document.getElementById('openPdfModalBtn').addEventListener('click', async () => {
+                try {
+                    const response = await fetchWithAuth(`${API_BASE_URL}/get-invoice-types.php`);
+                    const types = await response.json();
+                    const container = document.getElementById('invoiceCheckboxContainer');
+                    container.innerHTML = ''; // Clear previous checkboxes
+
+                    // Add "Select All" checkbox
+                    const allLabel = document.createElement('label');
+                    allLabel.className = 'flex items-center font-bold pb-2 border-b dark:border-slate-600';
+                    allLabel.innerHTML = `<input type="checkbox" id="selectAllInvoices" class="form-checkbox mr-2" checked> Pilih Semua`;
+                    container.appendChild(allLabel);
+
+                    // Add individual invoice type checkboxes
+                    types.forEach(type => {
+                        const label = document.createElement('label');
+                        label.className = 'flex items-center';
+                        label.innerHTML = `<input type="checkbox" name="invoice_type" value="${type.description}" class="form-checkbox mr-2" checked> ${type.description}`;
+                        container.appendChild(label);
+                    });
+                    
+                    // Logic for "Select All"
+                    document.getElementById('selectAllInvoices').addEventListener('change', (e) => {
+                        document.querySelectorAll('input[name="invoice_type"]').forEach(chk => {
+                            chk.checked = e.target.checked;
+                        });
+                    });
+
+                    container.addEventListener('change', (e) => {
+                        if (e.target.name === 'invoice_type') {
+                            const allCheckboxes = document.querySelectorAll('input[name="invoice_type"]');
+                            const allChecked = Array.from(allCheckboxes).every(chk => chk.checked);
+                            document.getElementById('selectAllInvoices').checked = allChecked;
+                        }
+                    });
+
+                    openModal('pdfModal');
+                } catch (error) {
+                    alert('Gagal mengambil jenis tagihan.');
+                }
+            });
+
+            document.querySelectorAll('input[name="report_type"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    document.getElementById('invoiceFilterContainer').classList.toggle('hidden', e.target.value !== 'detail');
+                });
+            });
+
+            document.getElementById('pdfForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const reportType = document.querySelector('input[name="report_type"]:checked').value;
+                
+                const params = new URLSearchParams();
+                params.append('token', authToken);
+                params.append('report_type', reportType);
+
+                if (reportType === 'detail') {
+                    const selectedInvoices = Array.from(document.querySelectorAll('input[name="invoice_type"]:checked'))
+                                                  .map(chk => chk.value);
+                    if (selectedInvoices.length === 0) {
+                        alert('Pilih setidaknya satu jenis tagihan untuk laporan detail.');
+                        return;
+                    }
+                    selectedInvoices.forEach(desc => {
+                        params.append('invoice_descriptions[]', desc);
+                    });
+                }
+
+                window.open(`${API_BASE_URL}/export-report.php?${params.toString()}`, '_blank');
+                closeModal('pdfModal');
+            });
+
+            // Skrip Logika Dark Mode
+            var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+
+            var themeToggleBtn = document.getElementById('theme-toggle');
+
+            themeToggleBtn.addEventListener('click', function() {
+                themeToggleDarkIcon.classList.toggle('hidden');
+                themeToggleLightIcon.classList.toggle('hidden');
+
+                if (localStorage.getItem('color-theme')) {
+                    if (localStorage.getItem('color-theme') === 'light') {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('color-theme', 'dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('color-theme', 'light');
+                    }
+                } else {
+                    if (document.documentElement.classList.contains('dark')) {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('color-theme', 'light');
+                    } else {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('color-theme', 'dark');
+                    }
+                }
+            });
+
 
             // INITIAL LOAD
             fetchStudents();

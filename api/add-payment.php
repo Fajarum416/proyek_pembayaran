@@ -16,10 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $studentId = isset($_POST['student_id']) ? (int)$_POST['student_id'] : 0;
 $invoiceId = isset($_POST['invoice_id']) ? (int)$_POST['invoice_id'] : 0;
 $amount = isset($_POST['amount']) ? filter_var($_POST['amount'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) : 0;
+// PERUBAHAN 1: Ambil tanggal pembayaran dari request
+$paymentDate = isset($_POST['payment_date']) && !empty($_POST['payment_date']) ? $_POST['payment_date'] : null;
 
-if ($studentId <= 0 || $invoiceId <= 0 || $amount <= 0) {
+
+// PERUBAHAN 2: Tambahkan validasi untuk tanggal
+if ($studentId <= 0 || $invoiceId <= 0 || $amount <= 0 || !$paymentDate) {
     http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap atau tidak valid.']);
+    echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap atau tidak valid. Pastikan tanggal pembayaran sudah diisi.']);
     exit;
 }
 
@@ -41,7 +45,8 @@ try {
     $stmt->execute([
         ':sid' => $studentId,
         ':iid' => $invoiceId,
-        ':pdate' => date('Y-m-d'),
+        // PERUBAHAN 3: Gunakan tanggal dari input, bukan tanggal hari ini
+        ':pdate' => $paymentDate,
         ':amount' => $amount,
         ':proof' => $proofPath
     ]);
